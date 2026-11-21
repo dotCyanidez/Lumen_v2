@@ -13,6 +13,7 @@ export class EclipseCoreBoss extends BaseEnemy {
     y,
     speedScale = 1,
     extraShields = 0,
+    petalHp = 60,
     phase = randRange(0, Math.PI * 2),
   }) {
     super({
@@ -27,7 +28,8 @@ export class EclipseCoreBoss extends BaseEnemy {
       isElite: false,
       label: 'ECLIPSE CORE',
     });
-    this.shields = 30 + Math.max(0, extraShields) * 10;
+    this.petalHp = Math.max(10, Math.round(petalHp));
+    this.shields = (3 + Math.max(0, extraShields)) * this.petalHp;
     this.maxShields = this.shields;
     this.drawnShields = this.getPetalCount();
     this.guardCooldown = 3.0;
@@ -40,17 +42,21 @@ export class EclipseCoreBoss extends BaseEnemy {
   }
 
   getPetalCount() {
-    return Math.max(0, Math.ceil((this.shields - 0.001) / 10));
+    return Math.max(0, Math.ceil((this.shields - 0.001) / this.petalHp));
   }
 
   getTotalPetalSlots() {
-    return Math.max(3, Math.ceil((this.maxShields || 30) / 10), this.drawnShields || 3);
+    return Math.max(
+      3,
+      Math.ceil((this.maxShields || this.petalHp * 3) / this.petalHp),
+      this.drawnShields || 3
+    );
   }
 
-  /** Solar Dash direct smash (`purgeNear`) cracks 1 petal (10 shield HP) if >1 petal remains. */
+  /** Solar Dash direct smash (`purgeNear`) cracks 1 full petal if >1 petal remains. */
   smashDashShield() {
-    if (this.shields > 10) {
-      this.shields -= 10;
+    if (this.shields > this.petalHp) {
+      this.shields -= this.petalHp;
       this.drawnShields = this.getPetalCount();
       return true;
     }

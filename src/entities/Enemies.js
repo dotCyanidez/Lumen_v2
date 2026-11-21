@@ -214,7 +214,16 @@ export class EnemyManager {
     this.projectiles.push(new EnemyProjectile(projOpts));
   }
 
-  _createEclipseCore(boundsW, boundsH, speedScale, player = null, viewW = 1280, viewH = 720, extraShields = 0) {
+  _createEclipseCore(
+    boundsW,
+    boundsH,
+    speedScale,
+    player = null,
+    viewW = 1280,
+    viewH = 720,
+    extraShields = 0,
+    petalHp = 60
+  ) {
     let x;
     let y;
     if (player && boundsW > 1400) {
@@ -226,17 +235,35 @@ export class EnemyManager {
       y = rand() < 0.5 ? -36 : boundsH + 36;
     }
 
-    return this._spawnModel('core', { x, y, speedScale, extraShields });
+    return this._spawnModel('core', { x, y, speedScale, extraShields, petalHp });
   }
 
   _drawCoreShield(e, count) {
     this.renderer.drawCoreShield(e, count);
   }
 
-  spawnEclipseCore(boundsW, boundsH, speedScale, extraShields = 0, player = null, viewW = 1280, viewH = 720) {
+  spawnEclipseCore(
+    boundsW,
+    boundsH,
+    speedScale,
+    extraShields = 0,
+    player = null,
+    viewW = 1280,
+    viewH = 720,
+    petalHp = 60
+  ) {
     const hasCore = this.enemies.some((e) => e.kind === 'core');
     if (hasCore) return null;
-    const core = this._createEclipseCore(boundsW, boundsH, speedScale, player, viewW, viewH, extraShields);
+    const core = this._createEclipseCore(
+      boundsW,
+      boundsH,
+      speedScale,
+      player,
+      viewW,
+      viewH,
+      extraShields,
+      petalHp
+    );
     this.enemies.push(core);
     return core;
   }
@@ -642,7 +669,7 @@ export class EnemyManager {
       onCoreTelegraph: callbacks.onCoreTelegraph,
       onHitPlayer: callbacks.onHit,
       onVoidParry: (core) => {
-        this.damageEnemyByRef(core, 10, 0, 0, { ...callbacks, sourceAbility: null });
+        this.damageEnemyByRef(core, core.petalHp || 60, 0, 0, { ...callbacks, sourceAbility: null });
         callbacks.onVoidParry?.(core.guardOriginX, core.guardOriginY);
       },
     };

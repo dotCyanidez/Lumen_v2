@@ -38,7 +38,7 @@ A complete reference of every enemy type, boss/elite encounter, enemy attack/abi
 | **Vortex** | `vortex` | Gravity Well | 30 HP | 32 | 26 | — | 19px | Phase 2 |
 | **Astral Harbinger** *(Elite)* | `harbinger` | Bullet-Hell Caster | 420 HP | 75 | 28 | 20 (Nova) / 18 (Lance) | 26px | ~30s timer |
 | **Umbral Dreadnought** *(Elite)* | `behemoth` | Charge-Slam Bruiser | 640 HP | 90 | 34 | 22 (Bomb) | 30px | Alternating w/ Harbinger |
-| **Eclipse Core** *(Boss)* | `core` | Shielded Shockwave Boss | 30–80 Shield HP *(3–8 petals)* | 65 *(min 1 level-up)* | 32 | 32 (Ring) | 26px | Phase 3, Phase 5 & Overdrive |
+| **Eclipse Core** *(Boss)* | `core` | Shielded Shockwave Boss | 180–3,040 Shield HP *(3–8 scaled petals)* | 65 *(min 1 level-up)* | 32 | 32 (Ring) | 26px | Phase 3, Phase 5 & Overdrive |
 
 ---
 
@@ -141,18 +141,18 @@ A complete reference of every enemy type, boss/elite encounter, enemy attack/abi
   - Same bounty package as Harbinger (`650 × combo` base score, `90` base EXP, `+2` Combo, `+1.5` Dash, `0.75s` invuln, `360px` repulse, **4 Golden Motes**).
 
 ### 11. Eclipse Core (`core`) — *Phase & Overdrive Boss*
-- **Base Stats:** `30` base Shield HP (`3` petals; *or `50` fallback in `ENEMY_STATS`; actual spawn starts at `30` + `extraShields × 10`*) · `65+` EXP · `32` contact dmg · **`32` ring dmg** · `26px` radius · `74 × min(1.3, speedScale)` px/s · `1.0s` warmup · `40s` lifetime.
+- **Base Stats:** `3 + extraShields` petals × scaled `petalHp` · `65+` EXP · `32` contact dmg · **`32` ring dmg** · `26px` radius · `74 × min(1.3, speedScale)` px/s · `1.0s` warmup · `40s` lifetime.
 - **Shield Mechanics:**
-  - Uses **petal shields** (`10` HP per petal) instead of regular HP; each hit subtracts `effAmount` from `shields` and cracks off petals (`220 × combo` score + `+1` Combo per crack).
-  - **Extra Shields by Spawn Trigger:**
-    - **Phase 3:** `3 + diffShields` petals (`0` Normal / `1` Hard / `2` Nightmare) → **`30 / 40 / 50` Shield HP** (`3 / 4 / 5` petals).
-    - **Phase 5:** `3 + 2 + diffShields` petals → **`50 / 60 / 70` Shield HP** (`5 / 6 / 7` petals).
-    - **Overdrive (every 48s starting at 135s):** `3 + min(5, 2 + overdriveTier)` petals → **`50` up to `80` Shield HP** (`5–8` petals).
+  - Uses **scaled petal shields** (`petalHp = max(10, round(((phase >= 5 ? 90 : 60) + overdriveTier * 25) * difficulty.hpMul))`) instead of regular HP; each hit subtracts `effAmount` from `shields` and cracks off petals (`220 × combo` score + `+1` Combo per crack).
+  - **Total Shield HP by Spawn Trigger** *(Normal / Hard `1.45×` / Nightmare `2.0×`)*:
+    - **Phase 3:** `3 / 4 / 5` petals → **`180` (`3×60`) / `348` (`4×87`) / `600` (`5×120`) Shield HP**.
+    - **Phase 5:** `5 / 6 / 7` petals → **`450` (`5×90`) / `786` (`6×131`) / `1,260` (`7×180`) Shield HP**.
+    - **Overdrive (every 48s starting at 135s):** `3 + min(5, 2 + overdriveTier)` petals (`6–8` petals) → **`690` (`OD+1` Normal) up to `3,040` (`OD+4` Nightmare) Shield HP**.
   - Only **1** Eclipse Core can be active at a time (`spawnEclipseCore` skips if one is already present).
 - **Movement:** Orbits/tracks a point drifting smoothly around Lumen (`±185px` X, `±140px` Y).
 - **Ability — Telegraphed Shockwave Ring & Void Parry:**
   - Every `3.8s` (initial `3.0s`), telegraphs a `230px` max-radius danger boundary for `0.85s`, then expands a crimson shockwave ring from `32px` → `230px` over `0.90s` (`32` dmg if it catches Lumen).
-  - **Counterplay — Void Parry:** **Solar Dashing** across the expanding ring triggers **Void Parry**, cancelling the wave (`4.6s` cooldown) and dealing **`10` dmg (`1` full Shield petal crack)** back to the Core!
+  - **Counterplay — Void Parry & Solar Dash Smash:** **Solar Dashing** across the expanding ring triggers **Void Parry**, cancelling the wave (`4.6s` cooldown) and dealing **`petalHp` dmg (`1` full Shield petal crack)** back to the Core. Direct Solar Dash contact also cracks `1` full petal (`petalHp` dmg).
 - **Shatter Rewards:**
   - `900 × combo` base score, `+2` Combo, `+2.0` Dash energy, `0.85s` invuln, `460px` shockwave repulse (`440` force).
   - Drops **6 Golden Motes**, **1 Radiant Prism**, and **2 Luminance Shards (`33` LUM each)**.

@@ -1895,6 +1895,11 @@ export class LumenGame {
           phase.id,
           this.activeDifficulty?.id
         );
+        const petalHp = WaveDirectorService.getCorePetalHp(
+          phase.id,
+          this.overdriveTier,
+          this.activeDifficulty?.hpMul || 1
+        );
         this.enemies.spawnEclipseCore(
           this.worldWidth,
           this.worldHeight,
@@ -1902,7 +1907,8 @@ export class LumenGame {
           extraShields,
           this.player,
           this.width,
-          this.height
+          this.height,
+          petalHp
         );
         this.enemies.spawnEclipseVolley(
           this.worldWidth,
@@ -2002,6 +2008,11 @@ export class LumenGame {
       if (this.survivalTime >= this.nextOverdriveCoreTime) {
         this.nextOverdriveCoreTime += 48;
         const p = PHASES[this.currentPhaseIndex];
+        const petalHp = WaveDirectorService.getCorePetalHp(
+          p.id,
+          this.overdriveTier,
+          this.activeDifficulty?.hpMul || 1
+        );
         this.enemies.spawnEclipseCore(
           this.worldWidth,
           this.worldHeight,
@@ -2009,7 +2020,8 @@ export class LumenGame {
           Math.min(5, 2 + this.overdriveTier),
           this.player,
           this.width,
-          this.height
+          this.height,
+          petalHp
         );
       }
     }

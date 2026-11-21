@@ -292,12 +292,12 @@ const { ENEMY_CLASSES, createEnemyModel } = await import('../src/models/enemies/
   assert.equal(spawnedProjs.length, 1);
   assert.equal(spawnedProjs[0].damage, 18);
 
-  // Polymorphic EclipseCoreBoss shield petal crack & dash smash
-  const core = createEnemyModel('core', { x: 500, y: 500, extraShields: 2 });
+  // Polymorphic EclipseCoreBoss scaled shield petal crack & dash smash
+  const core = createEnemyModel('core', { x: 500, y: 500, extraShields: 2, petalHp: 60 });
   core.age = 2;
-  assert.equal(core.shields, 50);
+  assert.equal(core.shields, 300);
   assert.equal(core.getPetalCount(), 5);
-  const coreHit = core.takeDamage(10);
+  const coreHit = core.takeDamage(60);
   assert.equal(coreHit.killed, false);
   assert.equal(coreHit.cracked, true);
   assert.equal(coreHit.petalRem, 4);

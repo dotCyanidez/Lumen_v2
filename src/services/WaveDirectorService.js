@@ -59,6 +59,11 @@ export class WaveDirectorService {
     return (phaseId === 5 ? 2 : 0) + diffShields;
   }
 
+  static getCorePetalHp(phaseId = 3, overdriveTier = 0, hpMul = 1) {
+    const basePetal = (phaseId >= 5 ? 90 : 60) + Math.max(0, overdriveTier) * 25;
+    return Math.max(10, Math.round(basePetal * (hpMul || 1)));
+  }
+
   static getNextVolleyInterval(phaseId, overdriveTier = 0) {
     return Math.max(14, 26 - phaseId * 2 - overdriveTier);
   }
