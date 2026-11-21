@@ -16,6 +16,7 @@ import {
   getMedalForScore,
   getScaledQuest,
   getUpgradeEffects,
+  isStartAbilityUnlocked,
 } from './Constants.js';
 import { clamp, getTodayDateKey } from './MathUtils.js';
 
@@ -24,7 +25,6 @@ const VALID_MODES = new Set(Object.values(GAME_MODES));
 
 const DEFAULT_DATA = {
   highScore: 0,
-  bestCombo: 1,
   bestTime: 0,
   bestElites: 0,
   totalElitesDefeated: 0,
@@ -129,7 +129,7 @@ class StorageService {
         Math.floor(Number(merged.lifetimeLuminance) || 0)
       );
       merged.highScore = Math.max(0, Math.floor(Number(merged.highScore) || 0));
-      merged.bestCombo = Math.max(1, Math.floor(Number(merged.bestCombo) || 1));
+      delete merged.bestCombo;
       merged.bestTime = Math.max(0, Number(merged.bestTime) || 0);
       merged.dailyHighScore = Math.max(0, Math.floor(Number(merged.dailyHighScore) || 0));
       merged.dailyStreak = Math.max(0, Math.floor(Number(merged.dailyStreak) || 0));
@@ -179,14 +179,7 @@ class StorageService {
       merged.claimedMilestones = Array.isArray(merged.claimedMilestones)
         ? [...new Set(merged.claimedMilestones.filter((id) => Boolean(MILESTONES_BY_ID[id])))]
         : [];
-      const hasStart = (abId) => {
-        const def = BLESSINGS.find((b) => b.id === abId);
-        if (!def) return false;
-        if (def.startsUnlocked) return true;
-        const group = ABILITY_TALENT_GROUPS.get(abId);
-        return group ? group.some((n) => (merged.talentRanks[n.id] || 0) > 0) : false;
-      };
-      if (!hasStart(merged.selectedStartAbility)) {
+      if (!isStartAbilityUnlocked(merged.selectedStartAbility, merged.talentRanks)) {
         merged.selectedStartAbility = 'resonant_volley';
       }
 
@@ -240,10 +233,6 @@ class StorageService {
 
   get highScore() {
     return this.data.highScore;
-  }
-
-  get bestCombo() {
-    return this.data.bestCombo;
   }
 
   get bestTime() {
@@ -526,11 +515,7 @@ class StorageService {
   }
 
   isStartAbilityUnlocked(abilityId) {
-    const def = BLESSINGS.find((b) => b.id === abilityId);
-    if (!def) return false;
-    if (def.startsUnlocked) return true;
-    const group = ABILITY_TALENT_GROUPS.get(abilityId);
-    return group ? group.some((n) => this.getAbilityTalentRank(n.id) > 0) : false;
+    return isStartAbilityUnlocked(abilityId, this.data.talentRanks);
   }
 
   get selectedStartAbility() {
@@ -612,7 +597,6 @@ class StorageService {
 
   recordRun({
     score,
-    maxCombo,
     time,
     runStats = {},
     mode = this.gameMode,
@@ -635,9 +619,6 @@ class StorageService {
     }
     if (isDailyRecord) {
       this.data.dailyHighScore = cleanScore;
-    }
-    if (maxCombo > this.data.bestCombo) {
-      this.data.bestCombo = Math.floor(maxCombo);
     }
     if (time > this.data.bestTime) {
       this.data.bestTime = time;
@@ -683,7 +664,6 @@ class StorageService {
     const combinedMetrics = {
       ...runStats,
       score: cleanScore,
-      maxCombo,
       survivalTime: time,
     };
 

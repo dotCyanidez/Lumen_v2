@@ -219,23 +219,23 @@ src/
 ### Phase 1: Core Reactive Primitives (`Observable`, `EventBus`) & Pure Domain Services
 **Recommended Model Tier:** `pro` / `inherit` to design contracts + `flash` for service extraction & unit tests.
 
-- [ ] **1.1 Create `src/core/Observable.js` & `src/core/EventBus.js` (<70 lines total):**
+- [x] **1.1 Create `src/core/Observable.js` & `src/core/EventBus.js` (<70 lines total):**
   - `Observable(initialValue)`: `.value` getter/setter (only notifies subscribers on `!==`), `.subscribe(fn, { immediate = true })`, `.notify()`.
   - `EventBus`: `.on(event, handler)` (returns unsubscribe fn), `.off(event, handler)`, `.emit(event, payload)`, `.clear()`.
-- [ ] **1.2 Extract `src/services/SynergyTalentService.js` from `src/core/Constants.js`:**
+- [x] **1.2 Extract `src/services/SynergyTalentService.js` from `src/core/Constants.js`:**
   - Move `getUpgradeEffects`, `getGroupTalentEffects`, `getActiveSynergies`, `getSynergyHintsForAbility`, `RANK_VALS` into `SynergyTalentService.js`.
   - Re-export them from `Constants.js` temporarily so existing callers don't break during Phases 1–4.
-- [ ] **1.3 Extract `src/services/DraftService.js` from `src/core/Constants.js`:**
+- [x] **1.3 Extract `src/services/DraftService.js` from `src/core/Constants.js`:**
   - Move `createDefaultBuildState`, `getAbilityInfo`, `getAbilityModifierLines`, `rollBlessingOptions`, `applyUpgradeOption`, `ASPECT_DEFS`, `RARITY_TIERS` into `DraftService.js` (and re-export from `Constants.js` for backward compatibility).
-- [ ] **1.4 Create `src/services/WaveDirectorService.js` & `src/services/CombatService.js`:**
+- [x] **1.4 Create `src/services/WaveDirectorService.js` & `src/services/CombatService.js`:**
   - `WaveDirectorService`: pure calculation of `getPhaseForRun(survivalTime, score)`, `getOverdriveTier(survivalTime, score)`, `getEffectivePhase(phase, overdriveTier, difficulty, twist)`, and elite/volley/overdriveCore schedule checks.
   - `CombatService`: pure resolution of `resolvePlayerHit({ rawDamage, playerModel, aegisRank, aegisFx, shieldRank, shieldFx, globalDmgMul, zenMode })` and `resolveLifesteal({ dealtDmg, lifestealPct, playerModel })`.
-- [ ] **1.5 Clean up Audit Finding #1 & #2:**
+- [x] **1.5 Clean up Audit Finding #1 & #2:**
   - Remove dead `bestCombo` / `maxCombo` from `src/core/Storage.js`.
   - Fix outdated `Graze` / `Resonance` text in `index.html` `#screen-guide`.
-- [ ] **1.6 Create `tests/verify_architecture.mjs`:**
+- [x] **1.6 Create `tests/verify_architecture.mjs`:**
   - Node `assert/strict` test suite verifying `Observable`, `EventBus`, `SynergyTalentService`, `DraftService`, `WaveDirectorService`, and `CombatService` with zero Pixi/DOM imports.
-- [ ] **1.7 Gate 1 Verification & `/ponytail-review`:**
+- [x] **1.7 Gate 1 Verification & `/ponytail-review`:**
   - `npm run build` passes + `node tests/verify_architecture.mjs` passes + `/ponytail-review` sign-off + commit `refactor(phase-1): extract observable, eventbus, and pure domain services`.
 
 ---

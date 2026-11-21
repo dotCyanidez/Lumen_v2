@@ -23,6 +23,8 @@ import {
   getLevelMaxHpBonus,
   getMedalForScore,
 } from './core/Constants.js';
+import { CombatService } from './services/CombatService.js';
+import { WaveDirectorService } from './services/WaveDirectorService.js';
 import {
   clamp,
   createRng,
@@ -1272,18 +1274,20 @@ export class LumenGame {
         if (dmg > 0 && this.state === GAME_STATES.PLAYING && this.player.health < this.player.maxHealth) {
           const fx = this._getCardRank(id) > 0 ? this._getGroupTalent(id) : null;
           const lsRate = fx?.lifestealPct || 0;
-          if (lsRate > 0) {
-            const prevHp = this.player.health;
-            this.player.health = Math.min(this.player.maxHealth, this.player.health + dmg * lsRate * 0.1);
-            const healed = this.player.health - prevHp;
-            if (healed > 0) {
-              this.lifestealHealAccum += healed;
-              if (this.lifestealHealAccum >= 3) {
-                const shown = Math.floor(this.lifestealHealAccum);
-                this.lifestealHealAccum -= shown;
-                this.particles.emitShockRing(this.player.x, this.player.y, 0.12, 1.15, 0x7cf8e8, 0.24, 0.42);
-                this._callout(this.player.x, this.player.y - 30, `+${shown} HP`, '#7cf8e8', 0.92);
-              }
+          const healed = CombatService.computeLifestealHeal(
+            dmg,
+            lsRate,
+            this.player.health,
+            this.player.maxHealth
+          );
+          if (healed > 0) {
+            this.player.health = Math.min(this.player.maxHealth, this.player.health + healed);
+            this.lifestealHealAccum += healed;
+            if (this.lifestealHealAccum >= 3) {
+              const shown = Math.floor(this.lifestealHealAccum);
+              this.lifestealHealAccum -= shown;
+              this.particles.emitShockRing(this.player.x, this.player.y, 0.12, 1.15, 0x7cf8e8, 0.24, 0.42);
+              this._callout(this.player.x, this.player.y - 30, `+${shown} HP`, '#7cf8e8', 0.92);
             }
           }
         }
@@ -1422,9 +1426,7 @@ export class LumenGame {
     const st = this.buildState.astral_shield;
     const fx = this._getGroupTalent('astral_shield');
     const prevMax = this.player.maxShield || 0;
-    const evoShieldBonus = rank >= 10 ? 30 : rank >= 5 ? 15 : 0;
-    const baseCap = 35 + evoShieldBonus + (st?.shieldCapAdd || 0) + (fx?.flatCap || 0);
-    const nextMax = Math.round(baseCap * (fx?.capMul || 1));
+    const nextMax = CombatService.computeMaxShield(rank, st, fx);
     this.player.maxShield = nextMax;
     if (grantDelta && nextMax > prevMax) {
       this.player.shield = Math.min(nextMax, (this.player.shield || 0) + (nextMax - prevMax));
@@ -1862,19 +1864,24 @@ export class LumenGame {
 
     let dmg = Math.max(1, Math.round(damage));
     if (this.player.shield > 0) {
-      const absorbed = Math.min(this.player.shield, dmg);
-      this.player.shield = Math.max(0, this.player.shield - absorbed);
-      dmg = Math.max(0, dmg - absorbed);
       const dmgBonus = (this.upgradeFx?.globalDmgMul || 1) * (this.activeDailyTwist?.dmgMul || 1);
+      const shieldRes = CombatService.resolveShieldAbsorption({
+        incomingDamage: dmg,
+        currentShield: this.player.shield,
+        shieldRank,
+        shieldFx,
+        dmgBonus,
+      });
+      this.player.shield = shieldRes.nextShield;
+      dmg = shieldRes.remainingDamage;
 
-      if (shieldFx?.reflectPct > 0 && absorbed > 0) {
-        const reflectDmg = +(absorbed * shieldFx.reflectPct * 10 * dmgBonus).toFixed(3);
+      if (shieldRes.reflectDmg > 0) {
         const shieldCb = { ...this._getCombatCallbacks(), sourceAbility: 'astral_shield' };
         const hits = this.enemies.damageRadius(
           this.player.x,
           this.player.y,
           135,
-          reflectDmg,
+          shieldRes.reflectDmg,
           180,
           0.3,
           shieldCb
@@ -1885,22 +1892,21 @@ export class LumenGame {
             this.enemies.findNearestTarget(this.player.x, this.player.y, 440);
           if (target?.enemy) {
             this.particles.emitChainLightning(this.player.x, this.player.y, target.enemy.x, target.enemy.y);
-            this.enemies.damageEnemyByRef(target.enemy, reflectDmg, 0, 0, shieldCb);
+            this.enemies.damageEnemyByRef(target.enemy, shieldRes.reflectDmg, 0, 0, shieldCb);
           }
         }
         this.particles.emitShockRing(this.player.x, this.player.y, 0.16, 2.2, 0x7ec8ff, 0.35, 0.65);
       }
 
-      const shieldBroken = this.player.shield <= 0 && absorbed > 0;
-      if (shieldBroken && shieldRank >= 5) {
+      if (shieldRes.triggerStaticPulse) {
         this._triggerShieldStaticPulse(shieldRank);
       }
-      if (shieldBroken && shieldFx?.overloadDmg > 0) {
+      if (shieldRes.overloadDmg > 0) {
         this.enemies.damageRadius(
           this.player.x,
           this.player.y,
           220,
-          +(shieldFx.overloadDmg * dmgBonus).toFixed(3),
+          shieldRes.overloadDmg,
           340,
           0.5,
           { ...this._getCombatCallbacks(), sourceAbility: 'astral_shield' }
@@ -2027,19 +2033,11 @@ export class LumenGame {
   }
 
   _checkPhaseEscalation() {
-    let nextIdx = this.currentPhaseIndex;
-    for (let i = PHASES.length - 1; i >= 0; i--) {
-      const targetPhase = PHASES[i];
-      // Prevent early high combo scores from catapulting straight into late-game swarms.
-      const minAllowedTime = targetPhase.minTime * 0.85;
-      const reachedByTime = this.survivalTime >= targetPhase.minTime;
-      const reachedByScore =
-        this.score >= targetPhase.minScore && this.survivalTime >= minAllowedTime;
-      if (reachedByTime || reachedByScore) {
-        nextIdx = Math.max(nextIdx, i);
-        break;
-      }
-    }
+    const nextIdx = WaveDirectorService.findTargetPhaseIndex(
+      this.currentPhaseIndex,
+      this.survivalTime,
+      this.score
+    );
     if (nextIdx > this.currentPhaseIndex) {
       this.currentPhaseIndex = nextIdx;
       const phase = PHASES[nextIdx];
@@ -2067,13 +2065,10 @@ export class LumenGame {
 
       // Eclipse Core Boss & Surge milestone event at Phase 3 and Phase 5
       if (phase.id === 3 || phase.id === 5) {
-        const diffShields =
-          this.activeDifficulty?.id === 'nightmare'
-            ? 2
-            : this.activeDifficulty?.id === 'hard'
-              ? 1
-              : 0;
-        const extraShields = (phase.id === 5 ? 2 : 0) + diffShields;
+        const extraShields = WaveDirectorService.getCoreExtraShieldsForPhase(
+          phase.id,
+          this.activeDifficulty?.id
+        );
         this.enemies.spawnEclipseCore(
           this.worldWidth,
           this.worldHeight,
@@ -2107,7 +2102,10 @@ export class LumenGame {
     // Periodic targeted Lancer volleys from Phase 3 onward
     const curPhase = PHASES[this.currentPhaseIndex];
     if (curPhase.id >= 3 && this.survivalTime >= this.nextVolleyTime) {
-      this.nextVolleyTime += Math.max(14, 26 - curPhase.id * 2 - this.overdriveTier);
+      this.nextVolleyTime += WaveDirectorService.getNextVolleyInterval(
+        curPhase.id,
+        this.overdriveTier
+      );
       const count = curPhase.id >= 5 ? 3 : 2;
       this.enemies.spawnEclipseVolley(
         this.worldWidth,
@@ -2126,8 +2124,7 @@ export class LumenGame {
       if (hasBoss) {
         this.nextEliteTime = this.survivalTime + 10;
       } else {
-        const interval = Math.max(26, 35 - this.overdriveTier * 2);
-        this.nextEliteTime += interval;
+        this.nextEliteTime += WaveDirectorService.getNextEliteInterval(this.overdriveTier);
         const kind = this.eliteWaveCount % 2 === 0 ? 'harbinger' : 'behemoth';
         const eliteHpMul = (curPhase.hpMul || 1) * (1 + this.eliteWaveCount * 0.35);
         this.eliteWaveCount++;
@@ -2153,11 +2150,10 @@ export class LumenGame {
 
     // Endless Overdrive escalation beyond Phase 5 (time-gated so score spikes cannot jump tiers early)
     if (this.currentPhaseIndex === PHASES.length - 1 && this.survivalTime >= 100) {
-      const timeTier = (this.survivalTime - 108) / 26;
-      const scoreTier = (this.score - 13750) / 4500;
-      this.overdriveTier = Math.max(
-        0,
-        Math.floor(Math.max(timeTier, Math.min(scoreTier, timeTier + 1)))
+      this.overdriveTier = WaveDirectorService.computeOverdriveTier(
+        this.currentPhaseIndex,
+        this.survivalTime,
+        this.score
       );
       while (this.overdriveTier >= this.nextOverdriveWave) {
         const waveDef = OVERDRIVE_WAVES[(this.nextOverdriveWave - 1) % OVERDRIVE_WAVES.length];
@@ -2502,31 +2498,13 @@ export class LumenGame {
         starPull
       );
 
-      const baseHpBonus =
-        phase.id >= 5
-          ? 2
-          : phase.id === 4
-            ? 1
-            : 0;
-
-      const diff = this.activeDifficulty;
       const twist = this.activeDailyTwist;
-      const effectivePhase = {
-        ...phase,
-        maxEnemies: Math.min(36, phase.maxEnemies + this.overdriveTier * 3),
-        spawnInterval: Math.max(
-          0.26,
-          (phase.spawnInterval - this.overdriveTier * 0.04) / (diff?.spawnRateMul || 1)
-        ),
-        speedScale: Math.min(
-          2.05,
-          (phase.speedScale + this.overdriveTier * 0.07) *
-            (diff?.enemySpeedMul || 1) *
-            (twist?.enemySpeedMul || 1)
-        ),
-        hpBonus: baseHpBonus + this.overdriveTier,
-        hpMul: diff?.hpMul || 1,
-      };
+      const effectivePhase = WaveDirectorService.buildEffectivePhase(
+        phase,
+        this.overdriveTier,
+        this.activeDifficulty,
+        twist
+      );
 
       const combatCallbacks = this._getCombatCallbacks();
 
