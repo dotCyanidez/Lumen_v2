@@ -339,9 +339,9 @@ A complete reference of every ability, in-run upgrade card, ascension, synergy, 
 | --- | --- | --- | --- | --- | --- |
 | **Chrono Alignment** (`ec_tempo`) | Root | — | 4 | 860 / 1380 / 2070 / 2930 | `+2.5% / +5.0% / +7.5% / +10.0%` trigger speed & `+4% / +8% / +12% / +16%` reach |
 | **Cadence Overclock** (`ec_overclock`) | Left Mid | Chrono Alignment | 4 | 1310 / 2000 / 2830 / 3790 | `+3% / +6% / +9% / +12%` faster all ability triggers |
-| **Mirror Resonance** (`ec_twinbeat`) | Left Cap | Cadence Overclock | 4 | 1900 / 2760 / 3970 / 5350 | Every `5th / 4th / 3rd / 2nd` Bolt, Voltaic Arc, Seeker, or Spear echoes a `65%` dmg Mirror Copy |
+| **Mirror Resonance** (`ec_twinbeat`) | Left Cap | Cadence Overclock | 4 | 1900 / 2760 / 3970 / 5350 | Every `6th / 5th / 4th / 3rd` Bolt, Voltaic Arc, Seeker, or Spear echoes a `65%` dmg Mirror Copy |
 | **Prismatic Amplify** (`ec_empower`) | Right Mid | Chrono Alignment | 4 | 1310 / 2000 / 2830 / 3790 | `+4% / +8% / +12% / +16%` global Ability Damage |
-| **Chromatic Resonance** (`ec_singularity`) | Right Cap | Prismatic Amplify | 4 | 1900 / 2760 / 3970 / 5350 | `+6% / +10% / +14% / +18%` dmg per active Synergy/Ascension & `165px` Echo Wave (`7.5 / 11.0 / 14.5 / 18.0` dmg) every 4s |
+| **Chromatic Resonance** (`ec_singularity`) | Right Cap | Prismatic Amplify | 4 | 1900 / 2760 / 3970 / 5350 | `+3% / +5% / +7% / +9%` dmg per active Synergy/Ascension & `165px` Echo Wave (`7.5 / 11.0 / 14.5 / 18.0` dmg) every 4s |
 
 ---
 
@@ -354,8 +354,8 @@ When **both** abilities in a pair reach **LV 3 or higher** in a run, the Synergy
 | **Storm Pollen** (`storm_pollen`) | Voltaic Arc + Starbloom Spores | Voltaic Arc detonates nearby armed Starblooms (`≤130px`) at `+35%` blast radius. |
 | **Event Horizon** (`event_horizon`) | Astral Pulse + Gravity Harvest | Astral Pulse pulls nearby Light Motes & Stars directly toward Lumen. |
 | **Halo Lance** (`halo_lance`) | Orbiting Blades + Celestial Spear | Celestial Spear fires a bonus `55%` dmg lance from your leading Blade. |
-| **Comet Volley** (`comet_volley`) | Starlight Bolt + Seeker Needles | Every 3rd Starlight Bolt volley launches an extra homing Seeker Needle. |
-| **Radiant Bastion** (`radiant_bastion`) | Starlight Shield + Orbiting Blades | While shielded, Orbiting Blades spin `25%` faster & every 4th hit restores `+2` Shield. |
+| **Comet Volley** (`comet_volley`) | Starlight Bolt + Seeker Needles | Every 2nd Starlight Bolt volley launches an extra homing Seeker Needle. |
+| **Radiant Bastion** (`radiant_bastion`) | Starlight Shield + Orbiting Blades | While shielded, Orbiting Blades deal +20% dmg, spin `25%` faster & every 4th hit restores `+2` Shield. |
 | **Tempest Echo** (`tempest_echo`) | Chrono Conduit + Voltaic Arc | Voltaic Arc gains `+25%` bounce reach & discharges a secondary `60%` Echo Chain. |
 
 ---

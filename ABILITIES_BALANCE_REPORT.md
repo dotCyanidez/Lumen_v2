@@ -61,3 +61,23 @@
 - **Best Swarm Clear (Maxed Sanctuary):** `Starlight Bolt` (`175.1` DPS), `Seeker Needles` (`166.1` DPS), `Orbiting Blades` (`126.1` DPS), `Starbloom Spores` (`96.1` DPS).
 - **Best Early/Untalented Carry (LV 1–5):** `Astral Pulse` (`24.0 → 30.4`), `Voltaic Arc` (`14.0 → 26.6`), `Celestial Spear` (`12.1 → 20.2`).
 - **Lifesteal Sustain:** `Astral Pulse` (`3.40 HP/s`), `Seeker Needles` (`1.84 HP/s`), `Orbiting Blades` (`1.04 HP/s`) — scales cleanly against `100–160 HP` Spirit pools without creating immortality.
+
+---
+
+## 6. Simulation #1 — Multi-Ability Synergies & 5th-Slot Value (Post-Tuning)
+
+### Tuning Applied
+- **`Chrono Conduit` (`ec_singularity`, `ec_twinbeat`):** `Chromatic Resonance` lowered from `6/10/14/18%` → **`3/5/7/9%`** dmg per Synergy/Evo; `Mirror Resonance` cadence adjusted from `5th/4th/3rd/2nd` → **`6th/5th/4th/3rd`** cast (cut maxed 5th-slot Boss multiplier from `+501%` → `+306%`).
+- **`Comet Volley` (`resonant_volley + seeker_barrage`):** Triggers every **2nd** Starlight Bolt volley instead of every 3rd (`+27%` Boss DPS).
+- **`Radiant Bastion` (`astral_shield + solar_orbitals`):** Added **`+20%` Orbiting Blade damage while shielded** alongside `+25%` spin speed & `+2` Shield every 4th hit (`+25%` Swarm / `+20%` Boss / `+36 Shield/min`).
+
+### Synergy Impact (LV 3 + LV 3, OFF vs ON)
+| Synergy | Swarm OFF → ON | Boss OFF → ON | Utility |
+| :--- | :---: | :---: | :--- |
+| **Storm Pollen** | `28.3` → `46.0` (**+63%**) | `7.0` → `9.0` (**+29%**) | — |
+| **Tempest Echo** | `15.3` → `23.3` (**+52%**) | `7.7` → `12.3` (**+60%**) | — |
+| **Halo Lance** | `28.3` → `38.2` (**+35%**) | `8.8` → `13.1` (**+49%**) | — |
+| **Comet Volley** | `21.3` → `24.6` (+15%) | `21.3` → `27.0` (**+27%**) | — |
+| **Radiant Bastion** | `10.7` → `13.4` (**+25%**) | `1.0` → `1.2` (+20%) | `+36 Shield/min` |
+| **Event Horizon** | `31.3` → `30.0` (0%) | `3.0` → `3.0` (0%) | `9 Mote Pulls / 30s` |
+

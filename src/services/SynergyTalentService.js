@@ -52,8 +52,8 @@ export const RANK_VALS = {
   as_mend_delay: [0, 0.15, 0.25, 0.35, 0.45],
   as_cap_mul: [0, 0.18, 0.32, 0.46, 0.65],
   as_dmg_bonus: [0, 0.1, 0.18, 0.26, 0.35],
-  ec_mirror_every: [0, 5, 4, 3, 2],
-  ec_syn_pct: [0, 0.06, 0.1, 0.14, 0.18],
+  ec_mirror_every: [0, 6, 5, 4, 3],
+  ec_syn_pct: [0, 0.03, 0.05, 0.07, 0.09],
 };
 
 export const rerollsForRank = (r) => (r > 0 ? 1 + Math.floor((r - 1) / 4) : 0);

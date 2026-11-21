@@ -82,6 +82,7 @@ export class OrbitingBladesAbility extends BaseAbility {
     const sizeMul = Math.min(2.4, st?.sizeMul || 1);
     const radiantBastion = Boolean(synergies?.has('radiant_bastion'));
     const bastionSpinMul = radiantBastion && player.shield > 0 ? 1.25 : 1;
+    const bastionDmgMul = radiantBastion && player.shield > 0 ? 1.2 : 1;
     const speedMul = (st?.speedMul || 1) * (fx?.speedMul || 1) * bastionSpinMul;
     const radius = 74 * sizeMul * reachMul * (isSurging ? 1.45 : 1);
     const angSpeed = 2.95 * speedMul * (1 + (hasteMul - 1) * 0.45);
@@ -89,7 +90,7 @@ export class OrbitingBladesAbility extends BaseAbility {
       st,
       fx,
       globalDmgMul,
-      isSurging ? 1 + (fx?.surgeBonusPct || 0) : 1
+      (isSurging ? 1 + (fx?.surgeBonusPct || 0) : 1) * bastionDmgMul
     );
     const hitCooldown = Math.max(0.14, 0.4 / Math.max(1, speedMul));
     const knock = 145 * (fx?.knockMul || 1);

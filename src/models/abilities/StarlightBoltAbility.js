@@ -105,7 +105,7 @@ export class StarlightBoltAbility extends BaseAbility {
       launchBolt(baseAngle + 0.08, +(dmg * 0.65).toFixed(3), COLORS.lumenViolet);
     }
 
-    this.volleyCount = (this.volleyCount + 1) % 3;
+    this.volleyCount = (this.volleyCount + 1) % 2;
     if (synergies?.has('comet_volley') && this.volleyCount === 0) {
       ctx.spawnProjectile({
         kind: 'seeker',

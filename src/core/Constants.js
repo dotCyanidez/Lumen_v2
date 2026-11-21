@@ -481,13 +481,13 @@ export const ABILITY_TALENTS = [
     (r) => `+${r * 3}% faster all ability triggers`),
   tn('echo_conduit', 'ec_twinbeat', 'leftCap', 'Mirror Resonance', 'prism', scaleCosts(T3_COSTS, 1.15), 'ec_overclock',
     'Periodically echoes a full Mirror Copy of your Bolt, Voltaic Arc, Seeker, or Spear casts.',
-    (r) => `Every ${step(['5th', '4th', '3rd', '2nd'], r)} Bolt/Arc/Seeker/Spear echoes a 65% Mirror Copy`),
+    (r) => `Every ${step(['6th', '5th', '4th', '3rd'], r)} Bolt/Arc/Seeker/Spear echoes a 65% Mirror Copy`),
   tn('echo_conduit', 'ec_empower', 'rightMid', 'Prismatic Amplify', 'shield', scaleCosts(T2_COSTS, 1.15), 'ec_tempo',
     'Amplifies global automatic Ability Damage across every equipped weapon.',
     (r) => `+${r * 4}% global Ability Damage`),
   tn('echo_conduit', 'ec_singularity', 'rightCap', 'Chromatic Resonance', 'blast', scaleCosts(T3_COSTS, 1.15), 'ec_empower',
     'Scales global damage per active Synergy & Evolution and pulses a periodic Echo Wave.',
-    (r) => `+${step([6, 10, 14, 18], r)}% dmg per Synergy/Evo & 165px Echo Wave every 4s`),
+    (r) => `+${step([3, 5, 7, 9], r)}% dmg per Synergy/Evo & 165px Echo Wave every 4s`),
 ];
 
 export const ABILITY_TALENTS_BY_ID = Object.fromEntries(ABILITY_TALENTS.map((t) => [t.id, t]));
@@ -620,14 +620,14 @@ export const ABILITY_SYNERGIES = [
     name: 'Comet Volley',
     pair: ['resonant_volley', 'seeker_barrage'],
     minRank: 3,
-    desc: 'Every 3rd Starlight Bolt volley launches an extra homing Seeker Needle.',
+    desc: 'Every 2nd Starlight Bolt volley launches an extra homing Seeker Needle.',
   },
   {
     id: 'radiant_bastion',
     name: 'Radiant Bastion',
     pair: ['astral_shield', 'solar_orbitals'],
     minRank: 3,
-    desc: 'While shielded, Orbiting Blades spin 25% faster & every 4th hit restores +2 Shield.',
+    desc: 'While shielded, Orbiting Blades deal +20% dmg, spin 25% faster & every 4th hit restores +2 Shield.',
   },
   {
     id: 'tempest_echo',
