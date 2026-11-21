@@ -126,6 +126,8 @@ export class LumenGame {
       onTalentAction: (id) => this.upgradeAbilityTalent(id),
       onDevReset: () => this.devResetProgress(),
       onDevMoney: () => this.devAddMoney(100000),
+      onDevSkipTime: (sec) => this.devSkipTime(sec),
+      onDevSpawnCore: () => this.devSpawnCore(),
       onTouchDash: () => this.triggerDash(),
       onUIClick: () => this.audio.playUIClick(),
     });
@@ -556,6 +558,74 @@ export class LumenGame {
     storage.addLuminance(amount);
     this._syncPrefsUI();
     this.audio.playLevelUp();
+  }
+
+  devSkipTime(seconds = 60) {
+    if (this.state !== GAME_STATES.PLAYING) return;
+    const dtSkip = Math.max(10, Number(seconds) || 60);
+    this.survivalTime += dtSkip;
+    this.score += Math.round(dtSkip * 50);
+
+    // Advance phase & overdrive tier cleanly without flooding queued timers
+    this.currentPhaseIndex = WaveDirectorService.findTargetPhaseIndex(
+      this.currentPhaseIndex,
+      this.survivalTime,
+      this.score
+    );
+    this.overdriveTier = WaveDirectorService.computeOverdriveTier(
+      this.currentPhaseIndex,
+      this.survivalTime,
+      this.score
+    );
+    this.nextOverdriveWave = Math.max(this.nextOverdriveWave, this.overdriveTier + 1);
+    if (this.nextEliteTime < this.survivalTime + 6) this.nextEliteTime = this.survivalTime + 8;
+    if (this.nextVolleyTime < this.survivalTime + 6) this.nextVolleyTime = this.survivalTime + 10;
+    if (this.nextOverdriveCoreTime < this.survivalTime + 10) {
+      this.nextOverdriveCoreTime = this.survivalTime + 20;
+    }
+
+    // Auto-apply 3 catch-up levels/cards per 60s skipped so build power matches the clock
+    const catchUpLevels = Math.max(1, Math.round((dtSkip / 60) * 3));
+    for (let k = 0; k < catchUpLevels; k++) {
+      this.level += 1;
+      const opts = generateUpgradeDraft(this.abilityRanks, this.buildState, Math.random, {
+        luck: this.upgradeFx?.luck || 0,
+      });
+      if (opts?.length) {
+        applyUpgradeOption(opts[0], this.abilityRanks, this.buildState);
+      }
+    }
+    this._syncLevelMaxHealth(true);
+    this._syncPlayerCardModifiers();
+    this._callout(
+      this.player.x,
+      this.player.y - 34,
+      `+${dtSkip}s · OD+${this.overdriveTier} · LV ${this.level}`,
+      '#ffe699',
+      1.15
+    );
+  }
+
+  devSpawnCore() {
+    if (this.state !== GAME_STATES.PLAYING) return;
+    const phase = PHASES[this.currentPhaseIndex] || PHASES[PHASES.length - 1];
+    const hpMul = this.activeDifficulty?.hpMul || 1;
+    const extraShields =
+      this.overdriveTier > 0
+        ? Math.min(5, 2 + this.overdriveTier)
+        : WaveDirectorService.getCoreExtraShieldsForPhase(phase.id, this.activeDifficulty?.id || 'normal');
+    const petalHp = WaveDirectorService.getCorePetalHp(phase.id, this.overdriveTier, hpMul);
+    this.enemies.spawnEclipseCore(
+      this.worldWidth,
+      this.worldHeight,
+      Math.min(1.75, phase.speedScale + this.overdriveTier * 0.07),
+      extraShields,
+      this.player,
+      this.width,
+      this.height,
+      petalHp
+    );
+    this._callout(this.player.x, this.player.y - 34, `CORE · ${petalHp} HP/PETAL`, '#ff8ea6', 1.12);
   }
 
   _callout(x, y, text, color, scale = 1.0) {

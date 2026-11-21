@@ -143,6 +143,26 @@
           <span class="touch-dash-label">DASH</span>
         </button>
 
+        <!-- In-Run Dev Controls (only visible with ?dev=1) -->
+        <div id="hud-dev-actions" class="hud-dev-actions hidden" aria-label="In-Run Dev Controls">
+          <button
+            id="btn-dev-skip-60"
+            class="title-dev-btn title-dev-btn--money"
+            type="button"
+            title="Skip +60s and scale Phase, Overdrive, and build level"
+          >
+            +60s
+          </button>
+          <button
+            id="btn-dev-spawn-core"
+            class="title-dev-btn title-dev-btn--reset"
+            type="button"
+            title="Spawn Eclipse Core at current Overdrive tier"
+          >
+            CORE
+          </button>
+        </div>
+
         <!-- Corner Minimap (shown during active runs) -->
         <div id="hud-minimap" class="hud-minimap hidden" aria-hidden="true">
           <canvas id="hud-minimap-canvas" width="308" height="220"></canvas>

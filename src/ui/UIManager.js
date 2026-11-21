@@ -50,6 +50,7 @@ export class UIManager {
     this.hudLoadoutEl = document.getElementById('hud-loadout');
 
     if (new URLSearchParams(window.location.search).get('dev') === '1') {
+      this._isDevMode = true;
       document.querySelector('.title-dev-actions')?.classList.remove('hidden');
     }
 
@@ -392,6 +393,12 @@ export class UIManager {
     });
     document.getElementById('btn-dev-money')?.addEventListener('click', () => {
       this.callbacks.onDevMoney?.();
+    });
+    document.getElementById('btn-dev-skip-60')?.addEventListener('click', () => {
+      this.callbacks.onDevSkipTime?.(60);
+    });
+    document.getElementById('btn-dev-spawn-core')?.addEventListener('click', () => {
+      this.callbacks.onDevSpawnCore?.();
     });
     document.getElementById('btn-sanctuary-close')?.addEventListener('click', () => {
       this.callbacks.onUIClick();
@@ -1067,6 +1074,7 @@ export class UIManager {
   setGameState(state, info = {}) {
     if (state !== GAME_STATES.PLAYING) {
       this.hudMixerPopover?.classList.add('hidden');
+      document.getElementById('hud-dev-actions')?.classList.add('hidden');
     }
 
     if (state === GAME_STATES.PLAYING) {
@@ -1075,6 +1083,9 @@ export class UIManager {
       this.hud.setAttribute('aria-hidden', 'false');
       this.hudMinimap?.classList.remove('hidden');
       this.hudMinimap?.classList.toggle('has-touch-dash', this.isTouchMode);
+      if (this._isDevMode) {
+        document.getElementById('hud-dev-actions')?.classList.remove('hidden');
+      }
       if (this.isTouchMode) this.touchDashBtn.classList.remove('hidden');
     } else if (state === GAME_STATES.DYING) {
       this._showScreen(null);
