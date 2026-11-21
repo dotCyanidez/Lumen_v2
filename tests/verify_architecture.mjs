@@ -280,8 +280,7 @@ const { ENEMY_CLASSES, createEnemyModel } = await import('../src/models/enemies/
   // Spitter fires dart EnemyProjectile via updateAI
   const spitter = createEnemyModel('spitter', { x: 300, y: 100 });
   spitter.age = 2;
-  spitter.shootCooldown = 0;
-  spitter.shootCharge = 0.65;
+  spitter.fireCharge = 0.02;
   const spawnedProjs = [];
   spitter.updateAI(0.05, {
     player: { x: 100, y: 100 },
@@ -306,4 +305,78 @@ const { ENEMY_CLASSES, createEnemyModel } = await import('../src/models/enemies/
   assert.equal(core.getPetalCount(), 3);
 }
 
-console.log('PHASE 1, 2 & 3 MVVM + SOLID ARCHITECTURE VERIFICATION PASSED');
+// 9. Phase 4 OOP Ability Hierarchy & CollectibleModel tests (Zero PixiJS / Zero DOM mocks!)
+const { BaseAbility } = await import('../src/models/abilities/BaseAbility.js');
+const { AbilityProjectileModel } = await import('../src/models/abilities/AbilityProjectileModel.js');
+const { LightPoolModel } = await import('../src/models/abilities/LightPoolModel.js');
+const { ABILITY_CLASSES, createAbilityInstances } = await import('../src/models/abilities/AbilityRegistry.js');
+const { CollectibleModel } = await import('../src/models/CollectibleModel.js');
+
+{
+  const instances = createAbilityInstances();
+  const expectedAbilityIds = [
+    'resonant_volley',
+    'solar_orbitals',
+    'voltaic_chain',
+    'astral_pulse',
+    'seeker_barrage',
+    'starbloom_spores',
+    'celestial_spear',
+    'echo_conduit',
+  ];
+  for (const id of expectedAbilityIds) {
+    assert.ok(ABILITY_CLASSES[id], `Missing ABILITY_CLASSES entry for ${id}`);
+    assert.ok(instances[id] instanceof BaseAbility, `${id} must extend BaseAbility (LSP)`);
+    assert.equal(instances[id].id, id);
+  }
+
+  // Test BaseAbility.computeBaseDamage (10x scaling) & cooldown shaving
+  const boltAbility = instances.resonant_volley;
+  assert.equal(boltAbility.computeBaseDamage({ dmgMul: 1.2 }, { singleDmgMul: 1.1 }, 1), 13.2);
+  boltAbility.reset(0.8);
+  boltAbility.shaveCooldown(0.3);
+  assert.ok(Math.abs(boltAbility.timer - 0.5) < 1e-6);
+
+  // Test StarlightBoltAbility firing 10-dmg projectile headlessly
+  const spawnedBolts = [];
+  const dummyEnemy = createEnemyModel('stalker', { x: 120, y: 0 });
+  dummyEnemy.age = 2;
+  boltAbility.timer = 0;
+  boltAbility.update(0.05, {
+    player: { x: 0, y: 0, facingAngle: 0 },
+    enemies: { enemies: [dummyEnemy] },
+    audio: {},
+    hasteMul: 1,
+    globalDmgMul: 1,
+    reachMul: 1,
+    primaryTint: 0x5ff7eb,
+    synergies: new Set(),
+    getRank: (id) => (id === 'resonant_volley' ? 1 : 0),
+    getBuild: () => ({ dmgMul: 1, rateMul: 1, countAdd: 0, pierceAdd: 0, rangeMul: 1 }),
+    getTalentFx: () => null,
+    shouldMirrorCast: () => false,
+    onOverclockCast: () => {},
+    spawnProjectile: (spec) => {
+      const p = new AbilityProjectileModel();
+      p.spawn(spec);
+      spawnedBolts.push(p);
+      return p;
+    },
+  });
+  assert.equal(spawnedBolts.length, 1);
+  assert.equal(spawnedBolts[0].damage, 10);
+  assert.equal(spawnedBolts[0].stepKinematics(0.1, 1280, 720), true);
+
+  // Test LightPoolModel DoT ticking
+  const pool = new LightPoolModel({ x: 50, y: 50, radius: 76, duration: 1.0, dps: 10 });
+  const tick1 = pool.step(0.1, 1);
+  assert.equal(tick1.expired, false);
+  assert.equal(tick1.tickDamage, 2.5); // 10 dps * 0.25s tick
+
+  // Test CollectibleModel magnetic pull & pickup
+  const mote = new CollectibleModel().init({ type: 'mote', x: 105, y: 100, baseValue: 50 });
+  const stepCollect = mote.step(0.016, { x: 100, y: 100, dashTimer: 0 }, 1280, 720, [], 1, false);
+  assert.equal(stepCollect.collected, true);
+}
+
+console.log('PHASE 1, 2, 3 & 4 MVVM + SOLID ARCHITECTURE VERIFICATION PASSED');

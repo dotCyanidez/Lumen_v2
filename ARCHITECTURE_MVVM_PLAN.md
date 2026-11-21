@@ -278,17 +278,17 @@ src/
 ### Phase 4: OOP Ability Hierarchy & Pooled Collectibles (Decompose 1,596-line `Abilities.js` & `Collectibles.js`)
 **Recommended Model Tier:** `pro` / `inherit` for `BaseAbility` contract + `flash` for individual ability subclasses & collectible pooling.
 
-- [ ] **4.1 Create `src/models/abilities/BaseAbility.js`, `AbilityProjectileModel.js`, `LightPoolModel.js`:**
+- [x] **4.1 Create `src/models/abilities/BaseAbility.js`, `AbilityProjectileModel.js`, `LightPoolModel.js`:**
   - `BaseAbility`: common cooldown ticking (`tickTimer(dt, hasteMul, rateMul)`), rank/ascension/talent lookup, mirror cast check, and `update(dt, abilityCtx)` contract using segregated interfaces (`ITargetFinder`, `ICombatSink`).
-- [ ] **4.2 Extract Polymorphic Ability Classes (`src/models/abilities/*.js`):**
+- [x] **4.2 Extract Polymorphic Ability Classes (`src/models/abilities/*.js`):**
   - `StarlightBoltAbility`, `OrbitingBladesAbility`, `VoltaicArcAbility`, `AstralPulseAbility`, `SeekerBarrageAbility`, `StarbloomSporesAbility`, `CelestialSpearAbility`, `EchoConduitPassive`, and `AbilityRegistry.js`.
-- [ ] **4.3 Separate `src/views/canvas/AbilityCanvasRenderer.js`:**
+- [x] **4.3 Separate `src/views/canvas/AbilityCanvasRenderer.js`:**
   - Renders active `AbilityProjectileModel`s, orbital blades/sunrays, spores, light pools, spear beams, and pulse rings in PixiJS.
-- [ ] **4.4 Separate `src/models/CollectibleModel.js` & Pooled `src/views/canvas/CollectibleCanvasRenderer.js` (Audit Finding #4):**
+- [x] **4.4 Separate `src/models/CollectibleModel.js` & Pooled `src/views/canvas/CollectibleCanvasRenderer.js` (Audit Finding #4):**
   - Pure collectible physics/magnet/constellation logic in `CollectibleModel.js`; pooled Pixi display objects in `CollectibleCanvasRenderer.js` (eliminating per-mote `new Container()` / `.destroy()` churn).
-- [ ] **4.5 Extend `tests/verify_architecture.mjs`:**
+- [x] **4.5 Extend `tests/verify_architecture.mjs`:**
   - Test all 7 damage abilities + `EchoConduitPassive` + `CollectibleModel` in pure Node with zero Pixi mocks.
-- [ ] **4.6 Gate 4 Verification & `/ponytail-review`:**
+- [x] **4.6 Gate 4 Verification & `/ponytail-review`:**
   - `npm run build` passes + `node tests/verify_architecture.mjs` passes + `/ponytail-review` sign-off + commit `refactor(phase-4): extract polymorphic OOP abilities and pooled collectible views`.
 
 ---
