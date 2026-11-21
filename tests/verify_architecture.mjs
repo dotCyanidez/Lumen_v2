@@ -139,4 +139,86 @@ import { CombatService } from '../src/services/CombatService.js';
   assert.equal(shieldHit.overloadDmg, 15);
 }
 
-console.log('PHASE 1 MVVM + SOLID ARCHITECTURE VERIFICATION PASSED');
+// 7. Phase 2 Models & ViewModels tests (Headless MVVM verification)
+const { MetaProfileModel } = await import('../src/models/MetaProfileModel.js');
+const { RunSessionModel } = await import('../src/models/RunSessionModel.js');
+const { HudViewModel } = await import('../src/viewmodels/HudViewModel.js');
+const { DraftViewModel } = await import('../src/viewmodels/DraftViewModel.js');
+const { SanctuaryViewModel } = await import('../src/viewmodels/SanctuaryViewModel.js');
+const { SettingsViewModel } = await import('../src/viewmodels/SettingsViewModel.js');
+const { TitleViewModel } = await import('../src/viewmodels/TitleViewModel.js');
+const { PauseGameOverViewModel } = await import('../src/viewmodels/PauseGameOverViewModel.js');
+
+{
+  const meta = new MetaProfileModel({ luminance: 1500, highScore: 24000, selectedSpirit: 'ember' });
+  assert.equal(meta.luminance.value, 1500);
+  assert.equal(meta.selectedSpirit.value, 'ember');
+
+  const session = new RunSessionModel();
+  session.reset({ startAbilityId: 'voltaic_chain', extraRerolls: 2, banishes: 1 });
+  assert.equal(session.abilityRanks.get('voltaic_chain'), 1);
+  assert.equal(session.rerollsLeft.value, 2);
+  assert.equal(session.banishesLeft.value, 1);
+
+  const expRes = session.addExp(50, 1);
+  assert.equal(expRes.leveledUp, 1);
+  assert.equal(session.level.value, 2);
+  assert.equal(session.pendingLevelUps, 1);
+  assert.equal(session.useReroll(), true);
+  assert.equal(session.rerollsLeft.value, 1);
+  assert.equal(session.banishAbility('solar_orbitals'), true);
+  assert.equal(session.banishesLeft.value, 0);
+  assert.equal(session.banishedAbilities.has('solar_orbitals'), true);
+
+  const hudVM = new HudViewModel();
+  hudVM.reset({ maxHealth: 100, maxDashes: 2 });
+  hudVM.updateFrame(0.1, { score: 1200, health: 25, maxHealth: 100, shield: 15, maxShield: 30, level: 3, exp: 20, expToNext: 80 });
+  assert.equal(hudVM.hpText.value, '25 / 100');
+  assert.equal(hudVM.hpState.value, 'critical');
+  assert.equal(hudVM.shieldVisible.value, true);
+  assert.equal(hudVM.shieldText.value, '15 / 30');
+  assert.equal(hudVM.levelText.value, 'LV 3');
+  assert.equal(hudVM.expRatio.value, 0.25);
+
+  let banishedUid = null;
+  const draftVM = new DraftViewModel({ onBanishOption: (uid) => { banishedUid = uid; } });
+  draftVM.openDraft([{ uid: 'solar_orbitals:unlock', abilityId: 'solar_orbitals' }], 2, {
+    rerollsLeft: 1,
+    banishesLeft: 1,
+    abilityRanks: session.abilityRanks,
+    banishedAbilities: new Set(),
+  });
+  assert.equal(draftVM.isOpen.value, true);
+  assert.equal(draftVM.canBanishAny.value, true);
+  draftVM.toggleBanishMode();
+  assert.equal(draftVM.banishMode.value, true);
+  draftVM.selectCardOrBanish('solar_orbitals:unlock');
+  assert.equal(banishedUid, 'solar_orbitals:unlock');
+  assert.equal(draftVM.banishMode.value, false);
+
+  const sanctVM = new SanctuaryViewModel();
+  // Mid talent requires root talent at maxLevel (4)
+  const lockedMid = sanctVM.computeTalentNodeState('rv_ricochet', 5000, { rv_velocity: 2 });
+  assert.equal(lockedMid.reqMet, false);
+  assert.equal(lockedMid.canAfford, false);
+  const unlockedMid = sanctVM.computeTalentNodeState('rv_ricochet', 5000, { rv_velocity: 4 });
+  assert.equal(unlockedMid.reqMet, true);
+  assert.equal(unlockedMid.canAfford, true);
+
+  const settingsVM = new SettingsViewModel();
+  settingsVM.sync({ sfxVolume: 0, ambientVolume: 0, cursorGlide: true });
+  assert.equal(settingsVM.allMuted.value, true);
+  assert.equal(settingsVM.cursorGlide.value, true);
+
+  const titleVM = new TitleViewModel();
+  titleVM.sync({ highScore: 9500, dailyStreak: 3, selectedDifficulty: 'hard' });
+  assert.equal(titleVM.dailyStreakText.value, '3D (+30%)');
+  assert.ok(titleVM.runNoteText.value.includes('HARD'));
+
+  const pgoVM = new PauseGameOverViewModel();
+  pgoVM.syncGameOver({ score: 15400, survivalTime: 125, purgedCount: 42, elitesDefeated: 2, luminanceEarned: 350 });
+  assert.equal(pgoVM.finalTimeText.value, '02:05');
+  assert.equal(pgoVM.luminanceEarnedText.value, '+350 LUM');
+}
+
+console.log('PHASE 1 & 2 MVVM + SOLID ARCHITECTURE VERIFICATION PASSED');

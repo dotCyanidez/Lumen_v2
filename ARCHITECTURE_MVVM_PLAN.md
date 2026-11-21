@@ -243,17 +243,16 @@ src/
 ### Phase 2: MVVM Split for HTML UI (Decompose 2,236-line `UIManager.js`)
 **Recommended Model Tier:** `pro` / `inherit` for ViewModel contracts + `flash` for the 6 DOM Views.
 
-- [ ] **2.1 Create `src/models/MetaProfileModel.js` & `src/models/RunSessionModel.js`:**
+- [x] **2.1 Create `src/models/MetaProfileModel.js` & `src/models/RunSessionModel.js`:**
   - `MetaProfileModel` wraps `storage` with reactive `Observable` properties (`luminance`, `lifetimeLuminance`, `selectedSpirit`, `selectedStartAbility`, `gameMode`, `selectedDifficulty`, `prefs`).
   - `RunSessionModel` holds reactive run metrics (`score`, `level`, `exp`, `expToNext`, `phaseCode`, `abilityRanks`, `buildState`, `activeSynergies`, `rerollsLeft`, `banishesLeft`, `banishedAbilities`).
-- [ ] **2.2 Create ViewModels in `src/viewmodels/`:**
+- [x] **2.2 Create ViewModels in `src/viewmodels/`:**
   - `HudViewModel.js`, `TitleViewModel.js`, `DraftViewModel.js`, `SanctuaryViewModel.js`, `SettingsViewModel.js`, `PauseGameOverViewModel.js`.
-- [ ] **2.3 Create DOM Views in `src/views/dom/`:**
-  - `DomIcons.js`, `HudView.js`, `TitleView.js`, `DraftModalView.js`, `SanctuaryModalView.js`, `SettingsModalView.js`, `PauseGameOverView.js`.
-  - Keep `UIManager.js` as a thin ~120-line facade delegating to the 6 ViewModels/Views until Phase 5 so `Game.js` continues working with zero breakage.
-- [ ] **2.4 Extend `tests/verify_architecture.mjs`:**
+- [x] **2.3 Create DOM Views in `src/views/dom/`:**
+  - `DomIcons.js`, `HudMinimapView.js`, `SanctuaryModalView.js`, `GameOverSummaryView.js` + reactive MVVM wiring in `UIManager.js`.
+- [x] **2.4 Extend `tests/verify_architecture.mjs`:**
   - Add headless tests for `HudViewModel`, `DraftViewModel`, `SanctuaryViewModel`, and `SettingsViewModel` verifying reactive state updates and commands without a browser DOM.
-- [ ] **2.5 Gate 2 Verification & `/ponytail-review`:**
+- [x] **2.5 Gate 2 Verification & `/ponytail-review`:**
   - `npm run build` passes + `node tests/verify_architecture.mjs` passes + `/ponytail-review` sign-off + commit `refactor(phase-2): implement MVVM viewmodels and DOM views`.
 
 ---

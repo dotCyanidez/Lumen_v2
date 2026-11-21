@@ -1,95 +1,33 @@
 import {
-  ABILITY_EVOLUTIONS,
-  ABILITY_TALENT_GROUPS,
-  ABILITY_TALENTS_BY_ID,
   DIFFICULTIES_BY_ID,
   GAME_MODES,
   GAME_STATES,
   MAX_ABILITY_SLOTS,
   RANK_MEDALS,
-  SANCTUARY_UPGRADES,
   SPIRIT_ASPECTS,
-  SPIRIT_PALETTES,
-  SPIRIT_TRAILS,
   getAbilityInfo,
   getAbilityModifierLines,
 } from '../core/Constants.js';
 import { formatDuration } from '../core/MathUtils.js';
-
-const SVG_MIXER = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2.2" fill="currentColor"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2.2" fill="currentColor"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="10" cy="17" r="2.2" fill="currentColor"/></svg>`;
-
-const SVG_PAUSE = `<svg viewBox="0 0 24 24" width="17" height="17"><rect x="6" y="5" width="4.2" height="14" rx="1.4" fill="currentColor" stroke="none"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.4" fill="currentColor" stroke="none"/></svg>`;
-
-const ABILITY_ICONS = {
-  resonant_volley: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 6.4L21 12l-6.4 2.6L12 21l-2.6-6.4L3 12l6.4-2.6z" fill="currentColor" fill-opacity="0.22"/></svg>`,
-  solar_orbitals: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="7.5" stroke-dasharray="3 2.5"/><circle cx="12" cy="4.5" r="2" fill="currentColor"/><circle cx="12" cy="19.5" r="2" fill="currentColor"/></svg>`,
-  voltaic_chain: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 2 5 13 12 13 11 22 19 11 12 11 13 2"/></svg>`,
-  astral_pulse: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="6.5" opacity="0.75"/><circle cx="12" cy="12" r="10" opacity="0.4"/></svg>`,
-  seeker_barrage: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 7l6 5-6 5"/><circle cx="7" cy="7" r="1.5" fill="currentColor"/><circle cx="7" cy="17" r="1.5" fill="currentColor"/></svg>`,
-  starbloom_spores: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="2.4" fill="currentColor"/><circle cx="12" cy="5.5" r="2"/><circle cx="18" cy="10" r="2"/><circle cx="15.5" cy="17.5" r="2"/><circle cx="8.5" cy="17.5" r="2"/><circle cx="6" cy="10" r="2"/></svg>`,
-  celestial_spear: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="20" x2="20" y2="4"/><polyline points="12 4 20 4 20 12"/></svg>`,
-  gravity_harvest: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6v5a6 6 0 0 0 12 0V6"/><line x1="6" y1="5" x2="6" y2="7"/><line x1="18" y1="5" x2="18" y2="7"/></svg>`,
-  aegis_bloom: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l7 3v5.5c0 4.5-3 7.8-7 9.5-4-1.7-7-5-7-9.5V6z" fill="currentColor" fill-opacity="0.16"/></svg>`,
-  astral_shield: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><polygon points="12 3 19.5 7.5 19.5 16.5 12 21 4.5 16.5 4.5 7.5" fill="currentColor" fill-opacity="0.16"/><circle cx="12" cy="12" r="3" fill="currentColor" fill-opacity="0.45"/></svg>`,
-  echo_conduit: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><polyline points="12 7 12 12 15.5 14"/></svg>`,
-};
-
-const MODE_LABELS = {
-  [GAME_MODES.ARCADE]: 'ARCADE',
-  [GAME_MODES.DAILY]: 'DAILY TIDE',
-  [GAME_MODES.ZEN]: 'ZEN FLOW',
-};
-
-const TALENT_GLYPHS = {
-  blast: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>`,
-  burn: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3c2.5 3.4 5 5.8 5 9.2a5 5 0 1 1-10 0c0-2 1-3.8 2.2-5.2.3 1.4 1.3 2.2 2.2 2.5C11 7 11.4 4.8 12 3z" fill="currentColor" fill-opacity="0.22"/></svg>`,
-  chain: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><polyline points="14 3 6 13 12 13 10 21 18 11 12 11 14 3"/></svg>`,
-  force: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6M9 6l-6 6 6 6"/></svg>`,
-  prism: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><polygon points="12 4 20 18 4 18" fill="currentColor" fill-opacity="0.18"/><line x1="12" y1="4" x2="12" y2="18"/></svg>`,
-  hoard: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><polygon points="12 3 19 9 16 20 8 20 5 9" fill="currentColor" fill-opacity="0.18"/></svg>`,
-  tempo: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><polyline points="12 7 12 12 15.5 14"/></svg>`,
-  shield: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 7.6-7 9.5-4-1.9-7-5-7-9.5V6z" fill="currentColor" fill-opacity="0.18"/><path d="M9 12l2 2 4-4"/></svg>`,
-  zone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><ellipse cx="12" cy="15" rx="8" ry="4" fill="currentColor" fill-opacity="0.16"/><ellipse cx="12" cy="15" rx="4.5" ry="2.2"/><path d="M9 9.5c0-1.5 1.5-2.5 1.5-4M15 9.5c0-1.5-1.5-2.5-1.5-4" stroke-linecap="round"/></svg>`,
-};
-
-const CRYSTAL_POINTS = [
-  '46,7 50.5,12 46,17 41.5,12',
-  '80,41.5 85,46 80,50.5 75,46',
-  '46,75 50.5,80 46,85 41.5,80',
-  '12,41.5 17,46 12,50.5 7,46',
-];
-
-function buildTalentRingSvg(level, maxLevel) {
-  const r = 34;
-  const c = 2 * Math.PI * r;
-  const ratio = maxLevel > 0 ? Math.min(1, Math.max(0, level / maxLevel)) : 0;
-  const litLen = c * ratio;
-  const maxed = level >= maxLevel && maxLevel > 0;
-  const strokeColor = maxed ? '#ffe699' : '#5ff7eb';
-
-  // Four crystal thresholds clockwise from top: 0+, 25%, 50%, 75%
-  const crystals = CRYSTAL_POINTS.map((pts, idx) => {
-    const threshold = idx * 0.25;
-    const isLit = idx === 0 ? ratio > 0 : ratio >= threshold;
-    return `<polygon class="fork-ring-crystal${isLit ? ' is-lit' : ''}" points="${pts}" />`;
-  }).join('');
-
-  return `
-    <svg class="fork-node-svg${maxed ? ' is-maxed is-active' : level > 0 ? ' is-unlocked' : ''}" viewBox="0 0 92 92" aria-hidden="true">
-      <circle class="fork-ring-track" cx="46" cy="46" r="${r}" />
-      ${
-        ratio > 0
-          ? `<circle class="fork-ring-progress" cx="46" cy="46" r="${r}" stroke="${strokeColor}" stroke-dasharray="${litLen.toFixed(2)} ${c.toFixed(2)}" transform="rotate(-90 46 46)" />`
-          : ''
-      }
-      ${crystals}
-    </svg>
-  `;
-}
-
-function hexToCss(hex) {
-  return `#${hex.toString(16).padStart(6, '0')}`;
-}
+import { DraftViewModel } from '../viewmodels/DraftViewModel.js';
+import { HudViewModel } from '../viewmodels/HudViewModel.js';
+import { PauseGameOverViewModel } from '../viewmodels/PauseGameOverViewModel.js';
+import { SanctuaryViewModel } from '../viewmodels/SanctuaryViewModel.js';
+import { SettingsViewModel } from '../viewmodels/SettingsViewModel.js';
+import { TitleViewModel } from '../viewmodels/TitleViewModel.js';
+import {
+  ABILITY_ICONS,
+  MODE_LABELS,
+  SVG_MIXER,
+  SVG_PAUSE,
+  hexToCss,
+} from '../views/dom/DomIcons.js';
+import {
+  renderDamageBreakdown,
+  renderRunConstellation,
+} from '../views/dom/GameOverSummaryView.js';
+import { renderMinimap } from '../views/dom/HudMinimapView.js';
+import { SanctuaryModalView } from '../views/dom/SanctuaryModalView.js';
 
 export class UIManager {
   constructor(callbacks) {
@@ -169,11 +107,7 @@ export class UIManager {
       looks: document.getElementById('sanctuary-tab-looks'),
       spirits: document.getElementById('sanctuary-tab-spirits'),
     };
-    this.activeSanctuaryTab = 'upgrades';
     this.sanctuaryPanelEl = document.querySelector('#screen-sanctuary .sanctuary-panel');
-    this.selectedTalentGroupId = 'resonant_volley';
-    this.selectedTalentId = null;
-    this._lastSanctuaryInfo = null;
 
     // Pause elements
     this.pauseScoreEl = document.getElementById('pause-score');
@@ -193,7 +127,6 @@ export class UIManager {
     this.blessingOpenTimestamp = 0;
     this.hadRerollInDraft = false;
     this.hadBanishInDraft = false;
-    this.banishMode = false;
     this._onReroll = null;
     this._onBanish = null;
 
@@ -268,13 +201,38 @@ export class UIManager {
     this.btnSettingsMode = document.getElementById('btn-settings-mode');
     this.lblSettingsMode = document.getElementById('label-settings-mode');
 
+    // ViewModels & modular DOM Views
+    this.hudVM = new HudViewModel();
+    this.draftVM = new DraftViewModel({
+      onRerollDraft: () => this._onReroll?.(),
+      onBanishOption: (id) => this._onBanish?.(id),
+    });
+    this.sanctuaryVM = new SanctuaryViewModel(callbacks);
+    this.settingsVM = new SettingsViewModel(callbacks);
+    this.titleVM = new TitleViewModel();
+    this.pauseGameOverVM = new PauseGameOverViewModel();
+
+    this.sanctuaryView = new SanctuaryModalView(
+      {
+        panelEl: this.sanctuaryPanelEl,
+        lumBadgeEl: this.sanctuaryLumBadgeEl,
+        upgradesEl: this.sanctuaryUpgradesEl,
+        talentsEl: this.sanctuaryTalentsEl,
+        trailsEl: this.sanctuaryTrailsEl,
+        palettesEl: this.sanctuaryPalettesEl,
+        spiritsEl: this.sanctuarySpiritsEl,
+        tabs: this.sanctuaryTabs,
+        panes: this.sanctuaryPanes,
+      },
+      this.sanctuaryVM,
+      this.callbacks
+    );
+
     this.dashPips = [];
     this.builtMaxHealth = 100;
     this.builtMaxDashes = 2;
     this._buildHudPips(100, 2);
 
-    this.displayedScore = 0;
-    this.targetScore = 0;
     this.lastHealth = -1;
     this.lastMaxHealth = -1;
     this.bannerTimeout = null;
@@ -284,7 +242,108 @@ export class UIManager {
     this.lastGameOverInfo = null;
     this.shareResetTimer = null;
 
+    this._bindViewModels();
     this._bindEvents();
+  }
+
+  get banishMode() {
+    return this.draftVM.banishMode.value;
+  }
+
+  set banishMode(val) {
+    this.draftVM.banishMode.value = Boolean(val);
+  }
+
+  _bindViewModels() {
+    this.draftVM.banishMode.subscribe(() => this._syncBanishModeUI(), { immediate: false });
+
+    this.hudVM.scoreText.subscribe((txt) => {
+      this.scoreEl.textContent = txt;
+    }, { immediate: false });
+    this.hudVM.hpText.subscribe((txt) => {
+      if (this.hpTextEl) this.hpTextEl.textContent = txt;
+    }, { immediate: false });
+    this.hudVM.hpRatio.subscribe((ratio) => {
+      if (this.hpFillEl) this.hpFillEl.style.transform = `scaleX(${ratio})`;
+    }, { immediate: false });
+    this.hudVM.shieldVisible.subscribe((vis) => {
+      this.shieldWrapEl?.classList.toggle('hidden', !vis);
+    }, { immediate: false });
+    this.hudVM.shieldText.subscribe((txt) => {
+      if (this.shieldTextEl) this.shieldTextEl.textContent = txt;
+    }, { immediate: false });
+    this.hudVM.shieldRatio.subscribe((ratio) => {
+      if (this.shieldFillEl) this.shieldFillEl.style.transform = `scaleX(${ratio})`;
+    }, { immediate: false });
+    this.hudVM.levelText.subscribe((txt) => {
+      if (this.hudLevelEl) this.hudLevelEl.textContent = txt;
+    }, { immediate: false });
+    this.hudVM.expRatio.subscribe((ratio) => {
+      if (this.hudExpFillEl) {
+        this.hudExpFillEl.style.transform = `scaleX(${Math.max(0.01, ratio)})`;
+      }
+    }, { immediate: false });
+    this.hudVM.phaseCode.subscribe((code) => {
+      this.phaseEl.textContent = code;
+    }, { immediate: false });
+    this.hudVM.modeTagVisible.subscribe((show) => {
+      this.hudModeTag?.classList.toggle('hidden', !show);
+      this.hudModeRow?.classList.toggle('hidden', !show);
+    }, { immediate: false });
+    this.hudVM.modeTagText.subscribe((label) => {
+      if (this.hudModeTag) this.hudModeTag.textContent = label;
+    }, { immediate: false });
+
+    this.settingsVM.sfxPct.subscribe((pct) => {
+      for (const slider of this.sfxSliders) {
+        slider.value = String(pct);
+        slider.style.setProperty('--val', `${pct}%`);
+      }
+      for (const lbl of this.sfxValLabels) {
+        lbl.textContent = pct === 0 ? 'OFF' : `${pct}%`;
+      }
+    });
+    this.settingsVM.ambientPct.subscribe((pct) => {
+      for (const slider of this.ambientSliders) {
+        slider.value = String(pct);
+        slider.style.setProperty('--val', `${pct}%`);
+      }
+      for (const lbl of this.ambientValLabels) {
+        lbl.textContent = pct === 0 ? 'OFF' : `${pct}%`;
+      }
+    });
+    this.settingsVM.bloomPct.subscribe((pct) => {
+      if (this.bloomSlider) {
+        this.bloomSlider.value = String(pct);
+        this.bloomSlider.style.setProperty('--val', `${pct}%`);
+      }
+      if (this.bloomValLabel) {
+        this.bloomValLabel.textContent = pct === 0 ? 'OFF' : `${pct}%`;
+      }
+    });
+    this.settingsVM.allMuted.subscribe((allMuted) => {
+      this.btnSettingsMute?.classList.toggle('is-on', allMuted);
+      if (this.lblSettingsMute) {
+        this.lblSettingsMute.textContent = allMuted ? 'MUTE ALL (M): ON' : 'MUTE ALL (M): OFF';
+      }
+    });
+    this.settingsVM.cursorGlide.subscribe((cursorGlide) => {
+      this.btnSettingsGlide?.classList.toggle('is-on', cursorGlide);
+      if (this.lblSettingsGlide) this.lblSettingsGlide.textContent = cursorGlide ? 'HOVER' : 'HOLD';
+    });
+    this.settingsVM.screenShake.subscribe((screenShake) => {
+      this.btnSettingsShake?.classList.toggle('is-on', screenShake);
+      if (this.lblSettingsShake) this.lblSettingsShake.textContent = screenShake ? 'ON' : 'OFF';
+    });
+    this.settingsVM.showTips.subscribe((showTips) => {
+      this.btnSettingsTips?.classList.toggle('is-on', showTips);
+      if (this.lblSettingsTips) {
+        this.lblSettingsTips.textContent = showTips ? 'ON NEXT RUN' : 'COMPLETED';
+      }
+    });
+    this.settingsVM.modeLabel.subscribe((modeLabel) => {
+      if (this.lblSettingsMode) this.lblSettingsMode.textContent = modeLabel;
+    });
   }
 
   _buildHudPips(maxHealth = 100, maxDashes = 2) {
@@ -341,7 +400,7 @@ export class UIManager {
     for (const tabBtn of this.sanctuaryTabs) {
       tabBtn.addEventListener('click', () => {
         this.callbacks.onUIClick();
-        this._setSanctuaryTab(tabBtn.dataset.tab);
+        this.sanctuaryView.setTab(tabBtn.dataset.tab);
       });
     }
     this.btnBlessingReroll?.addEventListener('click', () => {
@@ -350,8 +409,7 @@ export class UIManager {
     this.btnBlessingBanish?.addEventListener('click', () => {
       if (this.btnBlessingBanish.disabled) return;
       this.callbacks.onUIClick();
-      this.banishMode = !this.banishMode;
-      this._syncBanishModeUI();
+      this.draftVM.toggleBanishMode();
     });
 
     document.getElementById('btn-pause-settings')?.addEventListener('click', () => {
@@ -475,87 +533,38 @@ export class UIManager {
     this.hudMinimap?.classList.add('has-touch-dash');
   }
 
-  syncPreferences({
-    sfxVolume = 0.85,
-    ambientVolume = 0.75,
-    cursorGlide = false,
-    gameMode = GAME_MODES.ARCADE,
-    bloomLevel = 0.65,
-    screenShake = true,
-    tutorialCompleted = false,
-  }) {
-    const sfx = Math.max(0, Math.min(1, sfxVolume));
-    const amb = Math.max(0, Math.min(1, ambientVolume));
-    const bloom = Math.max(0, Math.min(1, bloomLevel));
-
-    const sfxPct = Math.round(sfx * 100);
-    const ambPct = Math.round(amb * 100);
-    const bloomPct = Math.round(bloom * 100);
-
-    for (const slider of this.sfxSliders) {
-      slider.value = String(sfxPct);
-      slider.style.setProperty('--val', `${sfxPct}%`);
-    }
-    for (const slider of this.ambientSliders) {
-      slider.value = String(ambPct);
-      slider.style.setProperty('--val', `${ambPct}%`);
-    }
-    for (const lbl of this.sfxValLabels) {
-      lbl.textContent = sfxPct === 0 ? 'OFF' : `${sfxPct}%`;
-    }
-    for (const lbl of this.ambientValLabels) {
-      lbl.textContent = ambPct === 0 ? 'OFF' : `${ambPct}%`;
-    }
-
-    if (this.bloomSlider) {
-      this.bloomSlider.value = String(bloomPct);
-      this.bloomSlider.style.setProperty('--val', `${bloomPct}%`);
-    }
-    if (this.bloomValLabel) {
-      this.bloomValLabel.textContent = bloomPct === 0 ? 'OFF' : `${bloomPct}%`;
-    }
-
-    const allMuted = sfxPct === 0 && ambPct === 0;
-    this.btnSettingsMute?.classList.toggle('is-on', allMuted);
-    if (this.lblSettingsMute) {
-      this.lblSettingsMute.textContent = allMuted ? 'MUTE ALL (M): ON' : 'MUTE ALL (M): OFF';
-    }
-
-    this.btnSettingsGlide?.classList.toggle('is-on', cursorGlide);
-    if (this.lblSettingsGlide) this.lblSettingsGlide.textContent = cursorGlide ? 'HOVER' : 'HOLD';
-
-    this.btnSettingsShake?.classList.toggle('is-on', screenShake);
-    if (this.lblSettingsShake) this.lblSettingsShake.textContent = screenShake ? 'ON' : 'OFF';
-
-    const showTips = !tutorialCompleted;
-    this.btnSettingsTips?.classList.toggle('is-on', showTips);
-    if (this.lblSettingsTips) this.lblSettingsTips.textContent = showTips ? 'ON NEXT RUN' : 'COMPLETED';
-
-    const modeLabel = MODE_LABELS[gameMode] || 'ARCADE';
-    const isAltMode = gameMode !== GAME_MODES.ARCADE;
-    this.btnSettingsMode?.classList.toggle('is-on', isAltMode);
-    if (this.lblSettingsMode) this.lblSettingsMode.textContent = modeLabel;
+  syncPreferences(prefs = {}) {
+    const gameMode = prefs.gameMode ?? GAME_MODES.ARCADE;
+    this.settingsVM.sync(prefs);
+    this.btnSettingsMode?.classList.toggle('is-on', gameMode !== GAME_MODES.ARCADE);
     for (const btn of this.titleModeButtons) {
       btn.classList.toggle('active', btn.dataset.mode === gameMode);
     }
   }
 
-  renderTitleMeta({
-    highScore = 0,
-    dailyHighScore = 0,
-    luminance = 0,
-    lifetimeLuminance = luminance,
-    selectedSpirit = 'wisp',
-    selectedStartAbility = 'resonant_volley',
-    dailyStreak = 0,
-    dailyTwist = null,
-    firstDailyAvailable = false,
-    bestMedals = {},
-    canAffordSanctuary = false,
-    activeQuests = [],
-    gameMode = GAME_MODES.ARCADE,
-    difficulty = 'normal',
-  }) {
+  renderTitleMeta(payload = {}) {
+    const {
+      highScore = 0,
+      dailyHighScore = 0,
+      luminance = 0,
+      lifetimeLuminance = luminance,
+      selectedSpirit = 'wisp',
+      selectedStartAbility = 'resonant_volley',
+      dailyStreak = 0,
+      dailyTwist = null,
+      firstDailyAvailable = false,
+      bestMedals = {},
+      canAffordSanctuary = false,
+      activeQuests = [],
+      gameMode = GAME_MODES.ARCADE,
+      difficulty = 'normal',
+    } = payload;
+
+    this.titleVM.sync({
+      ...payload,
+      selectedDifficulty: payload.difficulty ?? payload.selectedDifficulty ?? 'normal',
+    });
+
     this.titleHighscorePill.classList.toggle('hidden', highScore <= 0);
     this.titleHighscoreVal.textContent = highScore.toLocaleString();
 
@@ -595,8 +604,7 @@ export class UIManager {
     if (this.titleStreakPill && this.titleStreakVal) {
       this.titleStreakPill.classList.toggle('hidden', dailyStreak <= 0);
       if (dailyStreak > 0) {
-        const bonusPct = Math.min(60, Math.max(0, (dailyStreak - 1) * 15));
-        this.titleStreakVal.textContent = bonusPct > 0 ? `${dailyStreak}D (+${bonusPct}%)` : `${dailyStreak}D`;
+        this.titleStreakVal.textContent = this.titleVM.dailyStreakText.value;
       }
     }
 
@@ -822,7 +830,7 @@ export class UIManager {
 
   _syncBanishModeUI(banishesLeft = this._currentBanishesLeft || 0) {
     this._currentBanishesLeft = banishesLeft;
-    if (banishesLeft <= 0) this.banishMode = false;
+    if (banishesLeft <= 0 && this.banishMode) this.banishMode = false;
     this.blessingCardsEl?.classList.toggle('is-banish-mode', this.banishMode);
     this.blessingLoadoutEl?.classList.toggle('is-banish-mode', this.banishMode);
     if (this.btnBlessingBanish) {
@@ -862,11 +870,11 @@ export class UIManager {
       this.hadRerollInDraft = rerollsLeft > 0;
       this.hadBanishInDraft = banishesLeft > 0;
     }
-    this.banishMode = false;
+
+    this.draftVM.openDraft(options, level, extra);
 
     if (this.blessingEyebrowEl) {
-      this.blessingEyebrowEl.textContent =
-        eyebrow || (level ? `RESONANCE LEVEL ${level}` : 'RESONANCE LEVEL UP');
+      this.blessingEyebrowEl.textContent = this.draftVM.eyebrowText.value;
     }
     this.blessingTooltipEl?.classList.add('hidden');
     this.renderLoadoutBar(this.blessingLoadoutEl, abilityRanks, {
@@ -975,12 +983,16 @@ export class UIManager {
 
   hideBlessingDraft() {
     if (!this.screens.blessing) return;
-    this.banishMode = false;
+    this.draftVM.closeDraft();
     this.blessingTooltipEl?.classList.add('hidden');
     this.screens.blessing.classList.remove('active');
     this.screens.blessing.classList.add('hidden');
     this.screens.blessing.setAttribute('aria-hidden', 'true');
-    if (this.hud && document.querySelector('#screen-gameover.hidden') && document.querySelector('#screen-title.hidden')) {
+    if (
+      this.hud &&
+      document.querySelector('#screen-gameover.hidden') &&
+      document.querySelector('#screen-title.hidden')
+    ) {
       this.hud.classList.remove('hidden');
       if (this.isTouchMode) this.touchDashBtn.classList.remove('hidden');
     }
@@ -1017,10 +1029,12 @@ export class UIManager {
 
   openSettings(returnTo) {
     this.settingsReturnState = returnTo;
+    this.settingsVM.isOpen.value = true;
     this._showScreen('settings');
   }
 
   closeSettings() {
+    this.settingsVM.isOpen.value = false;
     this._showScreen(this.settingsReturnState);
   }
 
@@ -1029,10 +1043,12 @@ export class UIManager {
   }
 
   openSanctuary() {
+    this.sanctuaryVM.open();
     this._showScreen('sanctuary');
   }
 
   closeSanctuary() {
+    this.sanctuaryVM.close();
     this._showScreen(GAME_STATES.TITLE);
   }
 
@@ -1041,461 +1057,11 @@ export class UIManager {
   }
 
   resetSanctuarySelection() {
-    this.selectedTalentGroupId = 'resonant_volley';
-    this.selectedTalentId = null;
-  }
-
-  _setSanctuaryTab(tabName) {
-    this.activeSanctuaryTab = tabName || 'upgrades';
-    this.sanctuaryPanelEl?.classList.toggle('is-tree-mode', this.activeSanctuaryTab === 'talents');
-    for (const btn of this.sanctuaryTabs) {
-      btn.classList.toggle('active', btn.dataset.tab === this.activeSanctuaryTab);
-    }
-    for (const [key, pane] of Object.entries(this.sanctuaryPanes)) {
-      if (!pane) continue;
-      const on = key === this.activeSanctuaryTab;
-      pane.classList.toggle('hidden', !on);
-      pane.classList.toggle('active', on);
-    }
-  }
-
-  _makeSanctuaryCard({
-    title,
-    desc,
-    badge = '',
-    swatches = [],
-    pips = null,
-    btnText,
-    disabled = false,
-    equipped = false,
-    onAction,
-  }) {
-    const card = document.createElement('div');
-    card.className = `sanctuary-item${equipped ? ' is-equipped' : ''}`;
-
-    const head = document.createElement('div');
-    head.className = 'sanctuary-item-head';
-    const titleWrap = document.createElement('div');
-    titleWrap.className = 'sanctuary-item-titlewrap';
-    for (const hex of swatches) {
-      const dot = document.createElement('span');
-      dot.className = 'sanctuary-swatch';
-      dot.style.background = hexToCss(hex);
-      dot.style.boxShadow = `0 0 8px ${hexToCss(hex)}`;
-      titleWrap.appendChild(dot);
-    }
-    const nameEl = document.createElement('span');
-    nameEl.className = 'sanctuary-item-name';
-    nameEl.textContent = title;
-    titleWrap.appendChild(nameEl);
-    head.appendChild(titleWrap);
-
-    if (badge) {
-      const badgeEl = document.createElement('span');
-      badgeEl.className = 'sanctuary-item-badge';
-      badgeEl.textContent = badge;
-      head.appendChild(badgeEl);
-    }
-
-    const descEl = document.createElement('div');
-    descEl.className = 'sanctuary-item-desc';
-    descEl.textContent = desc;
-
-    const foot = document.createElement('div');
-    foot.className = 'sanctuary-item-foot';
-    if (pips) {
-      if (pips.total > 8) {
-        const barWrap = document.createElement('div');
-        barWrap.className = 'sanctuary-bar-wrap';
-        const pct = Math.min(100, Math.round((pips.filled / pips.total) * 100));
-        barWrap.innerHTML = `
-          <div class="sanctuary-bar"><span class="sanctuary-bar-fill" style="width:${pct}%"></span></div>
-          <span class="sanctuary-bar-label">${pips.filled}/${pips.total}</span>
-        `;
-        foot.appendChild(barWrap);
-      } else {
-        const pipRow = document.createElement('div');
-        pipRow.className = 'sanctuary-pips';
-        for (let i = 0; i < pips.total; i++) {
-          const p = document.createElement('span');
-          p.className = `sanctuary-pip${i < pips.filled ? ' filled' : ''}`;
-          pipRow.appendChild(p);
-        }
-        foot.appendChild(pipRow);
-      }
-    }
-
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = `sanctuary-buy-btn${equipped ? ' is-active' : ''}`;
-    btn.textContent = btnText;
-    btn.disabled = disabled;
-    if (!disabled) {
-      btn.addEventListener('click', onAction);
-    }
-    foot.appendChild(btn);
-
-    card.append(head, descEl, foot);
-    return card;
-  }
-
-  _renderTalentsTree({
-    luminance = 0,
-    selectedStartAbility = 'resonant_volley',
-    unlockedStartAbilities = ['resonant_volley'],
-    talentRanks = {},
-  }) {
-    const groupId = ABILITY_TALENT_GROUPS.has(this.selectedTalentGroupId)
-      ? this.selectedTalentGroupId
-      : ABILITY_TALENT_GROUPS.keys().next().value;
-    this.selectedTalentGroupId = groupId;
-    const groupNodes = ABILITY_TALENT_GROUPS.get(groupId) || [];
-    if (!groupNodes.some((n) => n.id === this.selectedTalentId)) {
-      this.selectedTalentId = groupNodes[0]?.id || null;
-    }
-
-    const layout = document.createElement('div');
-    layout.className = 'fork-tree-layout';
-
-    // 1. Left Column: TALENT GROUPS
-    const groupsCol = document.createElement('section');
-    groupsCol.className = 'fork-col fork-groups-col';
-    groupsCol.innerHTML = `<div class="fork-col-heading">TALENT GROUPS</div>`;
-    const groupsList = document.createElement('div');
-    groupsList.className = 'fork-groups-list';
-
-    for (const [abId, nodes] of ABILITY_TALENT_GROUPS.entries()) {
-      const info = getAbilityInfo(abId);
-      const investedRanks = nodes.reduce(
-        (sum, n) => sum + Math.max(0, Number(talentRanks?.[n.id]) || 0),
-        0
-      );
-      const totalPossible = nodes.reduce((sum, n) => sum + (n.maxLevel || n.costs.length), 0);
-      const hasAny = investedRanks > 0;
-      const isStart = selectedStartAbility === abId;
-      const isGroupSelected = abId === groupId;
-
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.dataset.groupId = abId;
-      btn.className = `fork-group-btn${isGroupSelected ? ' is-selected' : ''}${hasAny ? ' is-active' : ''}${isStart ? ' is-start' : ''}`;
-      btn.setAttribute('aria-pressed', String(isGroupSelected));
-      btn.innerHTML = `
-        <span class="fork-group-icon">${ABILITY_ICONS[abId] || ABILITY_ICONS.resonant_volley}</span>
-        <span class="fork-group-name">${info?.name || abId}</span>
-        <span class="fork-group-meta">${isStart ? '<span class="fork-group-star" title="Start Ability">★</span>' : ''}<span>${investedRanks}/${totalPossible}</span></span>
-      `;
-      btn.addEventListener('click', () => {
-        this.callbacks.onUIClick?.();
-        this.selectedTalentGroupId = abId;
-        this.selectedTalentId = nodes[0]?.id || null;
-        if (this._lastSanctuaryInfo) this._renderTalentsTree(this._lastSanctuaryInfo);
-      });
-      groupsList.appendChild(btn);
-    }
-    groupsCol.appendChild(groupsList);
-
-    // 2. Center Column: 5-node (1 -> 2 -> 2) TALENT TREE
-    const treeCol = document.createElement('section');
-    treeCol.className = 'fork-col fork-tree-col';
-    const groupInfo = getAbilityInfo(groupId);
-    const groupName = groupInfo?.name || groupId;
-    const canStart = unlockedStartAbilities.includes(groupId);
-    const isStartGroup = selectedStartAbility === groupId;
-
-    const headRow = document.createElement('div');
-    headRow.className = 'fork-col-headrow';
-    headRow.innerHTML = `<div class="fork-col-heading">${groupName.toUpperCase()} · TALENT TREE</div>`;
-    if (canStart) {
-      const startBtn = document.createElement('button');
-      startBtn.type = 'button';
-      startBtn.className = `sanctuary-start-btn${isStartGroup ? ' is-active' : ''}`;
-      startBtn.textContent = isStartGroup ? '★ START ABILITY' : 'SET START';
-      startBtn.disabled = isStartGroup;
-      startBtn.addEventListener('click', () => this.callbacks.onSelectStartAbility?.(groupId));
-      headRow.appendChild(startBtn);
-    } else {
-      const lockNote = document.createElement('span');
-      lockNote.className = 'sanctuary-start-lock';
-      lockNote.textContent = 'Talent unlocks Start';
-      headRow.appendChild(lockNote);
-    }
-    treeCol.appendChild(headRow);
-
-    const SLOT_POS = {
-      root: { xPct: 50, top: 10, svgX: 200, svgY: 41 },
-      leftMid: { xPct: 26, top: 120, svgX: 104, svgY: 151 },
-      rightMid: { xPct: 74, top: 120, svgX: 296, svgY: 151 },
-      leftCap: { xPct: 26, top: 230, svgX: 104, svgY: 261 },
-      rightCap: { xPct: 74, top: 230, svgX: 296, svgY: 261 },
-    };
-
-    const stage = document.createElement('div');
-    stage.className = 'fork-tree-stage';
-
-    const linkLines = groupNodes
-      .filter((n) => n.requires)
-      .map((n) => {
-        const parent = groupNodes.find((p) => p.id === n.requires) || ABILITY_TALENTS_BY_ID[n.requires];
-        const pPos = SLOT_POS[parent?.slot || 'root'];
-        const cPos = SLOT_POS[n.slot || 'leftMid'];
-        const pRank = Math.max(0, Number(talentRanks?.[parent?.id]) || 0);
-        const cRank = Math.max(0, Number(talentRanks?.[n.id]) || 0);
-        const parentMet = pRank >= (parent?.maxLevel || 1);
-        const cls = parentMet && cRank > 0 ? 'is-active' : parentMet ? 'is-unlocked' : '';
-        return `
-          <line class="fork-link-glow ${cls}" x1="${pPos.svgX}" y1="${pPos.svgY}" x2="${cPos.svgX}" y2="${cPos.svgY}" vector-effect="non-scaling-stroke" />
-          <line class="fork-link-line ${cls}" x1="${pPos.svgX}" y1="${pPos.svgY}" x2="${cPos.svgX}" y2="${cPos.svgY}" vector-effect="non-scaling-stroke" />
-        `;
-      })
-      .join('');
-    stage.innerHTML = `<svg class="fork-tree-svg" viewBox="0 0 400 340" preserveAspectRatio="none" aria-hidden="true">${linkLines}</svg>`;
-
-    for (const t of groupNodes) {
-      const pos = SLOT_POS[t.slot] || SLOT_POS.root;
-      const maxLevel = t.maxLevel || t.costs.length;
-      const level = Math.max(0, Math.min(maxLevel, Number(talentRanks?.[t.id]) || 0));
-      const maxed = level >= maxLevel;
-      const reqNode = t.requires ? ABILITY_TALENTS_BY_ID[t.requires] : null;
-      const reqRank = reqNode ? Math.max(0, Number(talentRanks?.[reqNode.id]) || 0) : 0;
-      const needed = reqNode ? reqNode.maxLevel : 0;
-      const prereqMet = !reqNode || reqRank >= needed;
-      const isSelected = t.id === this.selectedTalentId;
-      const glyph = TALENT_GLYPHS[t.glyph] || ABILITY_ICONS[groupId] || ABILITY_ICONS.resonant_volley;
-
-      const nodeBtn = document.createElement('button');
-      nodeBtn.type = 'button';
-      nodeBtn.dataset.talentId = t.id;
-      nodeBtn.dataset.slot = t.slot;
-      nodeBtn.style.left = `${pos.xPct}%`;
-      nodeBtn.style.top = `${pos.top}px`;
-      nodeBtn.className = `fork-tree-node${isSelected ? ' is-selected' : ''}${level > 0 ? ' is-unlocked' : ''}${maxed ? ' is-active is-maxed' : ''}${!prereqMet ? ' is-locked-node' : ''}`;
-      nodeBtn.setAttribute('aria-pressed', String(isSelected));
-      nodeBtn.innerHTML = `
-        <div class="fork-node-ring-wrap">
-          ${buildTalentRingSvg(level, maxLevel)}
-          <div class="fork-node-circle">${glyph}</div>
-        </div>
-        <div class="fork-node-name">${t.name}</div>
-        <div class="fork-node-level">Level ${level} / ${maxLevel}</div>
-      `;
-      nodeBtn.addEventListener('click', () => {
-        this.callbacks.onUIClick?.();
-        this.selectedTalentId = t.id;
-        if (this._lastSanctuaryInfo) this._renderTalentsTree(this._lastSanctuaryInfo);
-      });
-      stage.appendChild(nodeBtn);
-    }
-    treeCol.appendChild(stage);
-
-    // 3. Right Column: SELECTED TALENT Detail Panel
-    const detailCol = document.createElement('section');
-    detailCol.className = 'fork-col fork-detail-col';
-    detailCol.innerHTML = `<div class="fork-col-heading">SELECTED TALENT</div>`;
-
-    const sel = groupNodes.find((n) => n.id === this.selectedTalentId) || groupNodes[0];
-    if (sel) {
-      const maxLevel = sel.maxLevel || sel.costs.length;
-      const level = Math.max(0, Math.min(maxLevel, Number(talentRanks?.[sel.id]) || 0));
-      const maxed = level >= maxLevel;
-      const reqNode = sel.requires ? ABILITY_TALENTS_BY_ID[sel.requires] : null;
-      const reqRank = reqNode ? Math.max(0, Number(talentRanks?.[reqNode.id]) || 0) : 0;
-      const needed = reqNode ? reqNode.maxLevel : 0;
-      const prereqMet = !reqNode || reqRank >= needed;
-      const nextCost = maxed ? 0 : sel.costs[level];
-      const canBuy = !maxed && prereqMet && luminance >= nextCost;
-
-      const statusText = maxed
-        ? 'MAXED'
-        : !prereqMet
-          ? 'LOCKED'
-          : level > 0
-            ? `RANK ${level}/${maxLevel}`
-            : 'AVAILABLE';
-      const statusCls = maxed ? 'is-active' : level > 0 ? 'is-unlocked' : '';
-      const shortfall =
-        !maxed && prereqMet && luminance < nextCost
-          ? ` Need ${(nextCost - luminance).toLocaleString()} more LUM.`
-          : '';
-
-      const card = document.createElement('div');
-      card.className = `fork-detail-card${maxed ? ' is-active' : level > 0 ? ' is-unlocked' : ''}`;
-
-      const pipsHtml = Array.from({ length: maxLevel }, (_, idx) =>
-        `<span class="sanctuary-pip${idx < level ? ' filled' : ''}"></span>`
-      ).join('');
-
-      const currentHtml =
-        level > 0
-          ? `<div class="fork-detail-next is-current">
-              <div class="fork-detail-next-label">ACTIVE BONUS</div>
-              <div class="fork-detail-next-text">${sel.rankText(level)}</div>
-            </div>`
-          : '';
-
-      const nextHeading = maxed ? 'STATUS' : !prereqMet ? 'REQUIREMENT' : `NEXT (LEVEL ${level + 1} / ${maxLevel})`;
-      let nextBody;
-      if (maxed) {
-        nextBody = `Max Level reached · Full celestial potency active on ${groupName}.`;
-      } else if (!prereqMet) {
-        nextBody = `Requires ${reqNode.name} Level ${needed} (${reqRank}/${needed}). Next rank: ${sel.rankText(level + 1)}.`;
-      } else {
-        const startNote =
-          sel.slot === 'root' && level === 0
-            ? ` Unlocks ${groupName} as a Start Ability.`
-            : '';
-        nextBody = `${sel.rankText(level + 1)} · Cost: ${nextCost.toLocaleString()} LUM.${startNote}${shortfall}`;
-      }
-
-      card.innerHTML = `
-        <div class="fork-detail-head">
-          <span class="fork-detail-group">${groupName.toUpperCase()}</span>
-          <span class="fork-detail-status ${statusCls}">${statusText}</span>
-        </div>
-        <h3 class="fork-detail-title">${sel.name}</h3>
-        <div class="fork-detail-level-row">
-          <span class="fork-detail-level">Level ${level} / ${maxLevel}</span>
-          <div class="sanctuary-pips">${pipsHtml}</div>
-        </div>
-        <p class="fork-detail-desc">${sel.desc}</p>
-        ${currentHtml}
-        <div class="fork-detail-next">
-          <div class="fork-detail-next-label">${nextHeading}</div>
-          <div class="fork-detail-next-text">${nextBody}</div>
-        </div>
-      `;
-
-      const actionBtn = document.createElement('button');
-      actionBtn.type = 'button';
-      actionBtn.className = `sanctuary-buy-btn fork-detail-action${maxed ? ' is-active' : ''}`;
-      actionBtn.textContent = maxed
-        ? 'MAXED'
-        : !prereqMet
-          ? `LOCKED (${reqNode.name} Lv ${needed})`
-          : `UPGRADE  ${nextCost.toLocaleString()} LUM`;
-      actionBtn.disabled = !canBuy;
-      if (canBuy) {
-        actionBtn.addEventListener('click', () => this.callbacks.onTalentAction?.(sel.id));
-      }
-      card.appendChild(actionBtn);
-      detailCol.appendChild(card);
-    }
-
-    layout.append(groupsCol, treeCol, detailCol);
-    this.sanctuaryTalentsEl.innerHTML = '';
-    this.sanctuaryTalentsEl.appendChild(layout);
+    this.sanctuaryView.resetSelection();
   }
 
   renderSanctuary(payload = {}) {
-    this._lastSanctuaryInfo = payload;
-    const {
-      luminance = 0,
-      lifetimeLuminance = luminance,
-      selectedSpirit = 'wisp',
-      selectedStartAbility = 'resonant_volley',
-      unlockedStartAbilities = ['resonant_volley'],
-      selectedTrail = 'mist',
-      selectedPalette = 'default',
-      upgrades = {},
-      talentRanks = {},
-      unlockedTrails = ['mist'],
-      unlockedPalettes = ['default'],
-    } = payload;
-    this.sanctuaryPanelEl?.classList.toggle('is-tree-mode', this.activeSanctuaryTab === 'talents');
-    if (this.sanctuaryLumBadgeEl) {
-      this.sanctuaryLumBadgeEl.textContent = `${luminance.toLocaleString()} LUM`;
-    }
-
-    if (this.sanctuaryUpgradesEl) {
-      this.sanctuaryUpgradesEl.innerHTML = '';
-      for (const u of SANCTUARY_UPGRADES) {
-        const rank = Math.max(0, Number(upgrades?.[u.id]) || 0);
-        const maxed = rank >= u.costs.length;
-        const cost = maxed ? 0 : u.costs[rank];
-        const canBuy = !maxed && luminance >= cost;
-        this.sanctuaryUpgradesEl.appendChild(
-          this._makeSanctuaryCard({
-            title: u.name,
-            desc: u.desc,
-            badge: rank > 0 ? u.effectLabel(rank) : `RANK 0/${u.costs.length}`,
-            pips: { total: u.costs.length, filled: rank },
-            btnText: maxed ? 'MAXED' : `${cost.toLocaleString()} LUM`,
-            disabled: maxed || !canBuy,
-            equipped: maxed,
-            onAction: () => this.callbacks.onUpgradeSanctuary?.(u.id),
-          })
-        );
-      }
-    }
-
-    if (this.sanctuaryTalentsEl) {
-      this._renderTalentsTree({
-        luminance,
-        selectedStartAbility,
-        unlockedStartAbilities,
-        talentRanks,
-      });
-    }
-
-    if (this.sanctuaryTrailsEl) {
-      this.sanctuaryTrailsEl.innerHTML = '';
-      for (const tr of SPIRIT_TRAILS) {
-        const unlocked = unlockedTrails.includes(tr.id);
-        const equipped = selectedTrail === tr.id;
-        const canBuy = unlocked || luminance >= tr.cost;
-        this.sanctuaryTrailsEl.appendChild(
-          this._makeSanctuaryCard({
-            title: tr.name,
-            desc: tr.desc,
-            btnText: equipped ? 'EQUIPPED' : unlocked ? 'EQUIP' : `${tr.cost} LUM`,
-            disabled: equipped || !canBuy,
-            equipped,
-            onAction: () => this.callbacks.onSelectTrail?.(tr.id),
-          })
-        );
-      }
-    }
-
-    if (this.sanctuaryPalettesEl) {
-      this.sanctuaryPalettesEl.innerHTML = '';
-      for (const pal of SPIRIT_PALETTES) {
-        const unlocked = unlockedPalettes.includes(pal.id);
-        const equipped = selectedPalette === pal.id;
-        const canBuy = unlocked || luminance >= pal.cost;
-        const swatches = pal.colorHex ? [pal.colorHex, pal.accentHex || pal.colorHex] : [0x5df7eb, 0xffe699];
-        this.sanctuaryPalettesEl.appendChild(
-          this._makeSanctuaryCard({
-            title: pal.name,
-            desc: pal.colorHex ? 'Applies across spirit aura & projectiles.' : 'Uses each Spirit aspect native colors.',
-            swatches,
-            btnText: equipped ? 'EQUIPPED' : unlocked ? 'EQUIP' : `${pal.cost} LUM`,
-            disabled: equipped || !canBuy,
-            equipped,
-            onAction: () => this.callbacks.onSelectPalette?.(pal.id),
-          })
-        );
-      }
-    }
-
-    if (this.sanctuarySpiritsEl) {
-      this.sanctuarySpiritsEl.innerHTML = '';
-      for (const sp of SPIRIT_ASPECTS) {
-        const unlocked = lifetimeLuminance >= sp.unlockLuminance;
-        const equipped = unlocked && selectedSpirit === sp.id;
-        this.sanctuarySpiritsEl.appendChild(
-          this._makeSanctuaryCard({
-            title: sp.name,
-            desc: sp.desc,
-            badge: sp.tag,
-            swatches: [sp.colorHex, sp.accentHex || sp.colorHex],
-            btnText: equipped ? 'EQUIPPED' : unlocked ? 'EQUIP' : `🔒 ${sp.unlockLuminance} LIFE`,
-            disabled: equipped || !unlocked,
-            equipped,
-            onAction: () => this.callbacks.onSelectSpirit?.(sp.id),
-          })
-        );
-      }
-    }
+    this.sanctuaryView.renderSanctuary(payload);
   }
 
   setGameState(state, info = {}) {
@@ -1531,8 +1097,10 @@ export class UIManager {
       this.touchDashBtn.classList.add('hidden');
       this.phaseBanner?.classList.add('hidden');
       this.hideTutorial();
+      const pauseBest = info.bestScore ?? info.highScore ?? 0;
+      this.pauseGameOverVM.syncPause({ score: info.score || 0, highScore: pauseBest });
       this.pauseScoreEl.textContent = Math.floor(info.score || 0).toLocaleString();
-      this.pauseBestEl.textContent = (info.bestScore ?? info.highScore ?? 0).toLocaleString();
+      this.pauseBestEl.textContent = pauseBest.toLocaleString();
       this.pauseTooltipEl?.classList.add('hidden');
       this.renderLoadoutBar(this.pauseLoadoutEl, info.abilityRanks, {
         interactive: true,
@@ -1546,10 +1114,7 @@ export class UIManager {
         const syns = info.activeSynergies || [];
         this.pauseSynergiesEl.classList.toggle('hidden', syns.length === 0);
         this.pauseSynergiesEl.innerHTML = syns
-          .map(
-            (s) =>
-              `<span class="pause-synergy-pill" title="${s.desc}">◈ ${s.name}</span>`
-          )
+          .map((s) => `<span class="pause-synergy-pill" title="${s.desc}">◈ ${s.name}</span>`)
           .join('');
       }
       this._showScreen(GAME_STATES.PAUSED);
@@ -1561,6 +1126,9 @@ export class UIManager {
       this.hideTutorial();
       this.lastGameOverInfo = info;
 
+      const durationSec = info.time ?? info.survivalTime ?? 0;
+      this.pauseGameOverVM.syncGameOver({ ...info, survivalTime: durationSec });
+
       const score = Math.floor(info.score || 0);
       const isDaily = info.mode === GAME_MODES.DAILY;
       const showBadge = Boolean(info.isNewRecord || info.isDailyRecord);
@@ -1570,7 +1138,7 @@ export class UIManager {
           : '✦ NEW SANCTUARY RECORD ✦';
       this.goRecordBadge.classList.toggle('hidden', !showBadge);
 
-      this.goScoreEl.textContent = score.toLocaleString();
+      this.goScoreEl.textContent = this.pauseGameOverVM.finalScoreText.value;
       this.goPhaseEl.textContent = `Reached ${info.phaseName || 'First Spark'}${info.level ? ` · LV ${info.level}` : ''}`;
 
       const achievedMedal = info.medal?.achieved || null;
@@ -1595,7 +1163,7 @@ export class UIManager {
       if (this.goElitesEl) {
         this.goElitesEl.textContent = (info.elitesDefeated || 0).toLocaleString();
       }
-      this.goTimeEl.textContent = formatDuration(info.time ?? info.survivalTime ?? 0);
+      this.goTimeEl.textContent = this.pauseGameOverVM.finalTimeText.value;
 
       // Build compelling "So close" / reward callout
       if (this.goTargetCalloutEl) {
@@ -1637,7 +1205,15 @@ export class UIManager {
       }
 
       this.renderLoadoutBar(this.goLoadoutEl, info.abilityRanks);
-      this._renderDamageBreakdown(info);
+      this.goDmgExpanded = renderDamageBreakdown(
+        {
+          section: this.goDmgSection,
+          listEl: this.goDmgListEl,
+          detailEl: this.goDmgDetailEl,
+          detailsBtn: this.btnGoDmgDetails,
+        },
+        info
+      );
 
       // Render evaluated Contracts (show completed quests highlighted + active slots up to 3)
       const completed = info.completedQuests || [];
@@ -1653,124 +1229,14 @@ export class UIManager {
       }
 
       const points = info.runHighlights || info.trailPoints || [];
-      this._renderRunConstellation(points);
+      renderRunConstellation(
+        points,
+        this.goConstellationCanvas?.getContext('2d'),
+        { w: 360, h: 120 },
+        true
+      );
       this._showScreen(GAME_STATES.GAMEOVER);
     }
-  }
-
-  _renderDamageBreakdown(info) {
-    if (!this.goDmgSection || !this.goDmgListEl || !this.goDmgDetailEl) return;
-    this.goDmgExpanded = false;
-    if (this.btnGoDmgDetails) {
-      this.btnGoDmgDetails.textContent = 'DETAILED INFO';
-      this.btnGoDmgDetails.setAttribute('aria-expanded', 'false');
-    }
-    this.goDmgDetailEl.classList.add('hidden');
-
-    const report = info.damageReport;
-    const entries = report?.entries || [];
-    if (entries.length === 0) {
-      this.goDmgSection.classList.add('hidden');
-      return;
-    }
-
-    this.goDmgSection.classList.remove('hidden');
-    this.goDmgListEl.innerHTML = '';
-    for (const row of entries) {
-      const ab = getAbilityInfo(row.abilityId);
-      const item = document.createElement('div');
-      item.className = 'go-dmg-row';
-      item.innerHTML = `
-        <span class="go-dmg-icon">${ABILITY_ICONS[row.abilityId] || ABILITY_ICONS.resonant_volley}</span>
-        <span class="go-dmg-name">${ab?.name || row.abilityId}</span>
-        <div class="go-dmg-bar"><span class="go-dmg-bar-fill" style="width:${Math.max(4, Math.min(100, row.rawPct || row.pct))}%"></span></div>
-        <span class="go-dmg-pct">${row.pct}%</span>
-      `;
-      this.goDmgListEl.appendChild(item);
-    }
-
-    const metaBits = [];
-    if (info.difficulty) metaBits.push(`Difficulty: ${info.difficulty.label}`);
-    if (info.dailyTwist) metaBits.push(`Twist: ${info.dailyTwist.name}`);
-    if (info.isFirstDailyDouble) metaBits.push(`First Daily 2× LUM (+${info.firstDailyBonusLum || 0})`);
-    if ((info.bonusLuminance || 0) > 0) metaBits.push(`Shards & Events: +${info.bonusLuminance} LUM`);
-    const syns = info.activeSynergies || [];
-    const synHtml =
-      syns.length > 0
-        ? `<div class="go-dmg-synergies"><strong>Synergies:</strong> ${syns.map((s) => `${s.name}`).join(' · ')}</div>`
-        : '';
-    const detailRows = entries
-      .map((row) => {
-        const ab = getAbilityInfo(row.abilityId);
-        const dotStr = row.dot > 0 ? ` (${row.dot} DoT)` : '';
-        return `<div class="go-dmg-detail-row"><span>${ab?.name || row.abilityId}</span><span>${row.total} DMG${dotStr} · ${row.kills} kills · ${row.pct}%</span></div>`;
-      })
-      .join('');
-    this.goDmgDetailEl.innerHTML = `
-      <div class="go-dmg-detail-meta">Total Ability Damage: ${report.grandTotal} · ${metaBits.join(' · ')}</div>
-      ${synHtml}
-      <div class="go-dmg-detail-list">${detailRows}</div>
-    `;
-  }
-
-  _renderRunConstellation(points, targetCtx = null, dims = { w: 360, h: 120 }) {
-    const ctx = targetCtx || this.goConstellationCanvas?.getContext('2d');
-    if (!ctx) return;
-
-    const w = dims.w;
-    const h = dims.h;
-    if (!targetCtx) ctx.clearRect(0, 0, w, h);
-
-    if (points.length < 2) {
-      if (!targetCtx) {
-        const g = ctx.createRadialGradient(w * 0.5, h * 0.5, 2, w * 0.5, h * 0.5, 42);
-        g.addColorStop(0, 'rgba(95, 247, 235, 0.35)');
-        g.addColorStop(1, 'rgba(95, 247, 235, 0)');
-        ctx.fillStyle = g;
-        ctx.fillRect(0, 0, w, h);
-      }
-      return;
-    }
-
-    ctx.save();
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    const ox = dims.x || 0;
-    const oy = dims.y || 0;
-    const padX = Math.max(16, w * 0.08);
-    const padY = Math.max(14, h * 0.14);
-
-    for (let i = 1; i < points.length; i++) {
-      const a = points[i - 1];
-      const b = points[i];
-      const frac = i / points.length;
-      const x1 = ox + padX + a.nx * (w - padX * 2);
-      const y1 = oy + padY + a.ny * (h - padY * 2);
-      const x2 = ox + padX + b.nx * (w - padX * 2);
-      const y2 = oy + padY + b.ny * (h - padY * 2);
-      ctx.strokeStyle =
-        b.gold || b.dashing
-          ? `rgba(255, 229, 148, ${0.42 + frac * 0.5})`
-          : `rgba(95, 247, 235, ${0.14 + frac * 0.48})`;
-      ctx.lineWidth = b.gold || b.dashing ? 2.4 : 1.4;
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
-    }
-
-    const last = points[points.length - 1];
-    const lx = ox + padX + last.nx * (w - padX * 2);
-    const ly = oy + padY + last.ny * (h - padY * 2);
-    const star = ctx.createRadialGradient(lx, ly, 1, lx, ly, 16);
-    star.addColorStop(0, 'rgba(255, 248, 220, 0.95)');
-    star.addColorStop(0.4, 'rgba(95, 247, 235, 0.5)');
-    star.addColorStop(1, 'rgba(95, 247, 235, 0)');
-    ctx.fillStyle = star;
-    ctx.beginPath();
-    ctx.arc(lx, ly, 16, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
   }
 
   async shareRunCard() {
@@ -1814,12 +1280,12 @@ export class UIManager {
     ctx.fillRect(420, 74, 340, 220);
     ctx.strokeStyle = 'rgba(120, 240, 235, 0.2)';
     ctx.strokeRect(420, 74, 340, 220);
-    this._renderRunConstellation(info.runHighlights || info.trailPoints || [], ctx, {
-      x: 420,
-      y: 74,
-      w: 340,
-      h: 220,
-    });
+    renderRunConstellation(
+      info.runHighlights || info.trailPoints || [],
+      ctx,
+      { x: 420, y: 74, w: 340, h: 220 },
+      false
+    );
 
     // Header & score text
     const modeLabel = MODE_LABELS[info.mode] || 'ARCADE';
@@ -1904,8 +1370,12 @@ export class UIManager {
     if (maxHealth !== this.builtMaxHealth || maxDashes !== this.builtMaxDashes) {
       this._buildHudPips(maxHealth, maxDashes);
     }
-    this.displayedScore = 0;
-    this.targetScore = 0;
+    this.hudVM.reset({ maxHealth, maxDashes, mode, shield, maxShield });
+    this.hudVM.phaseCode.value = phaseCode;
+    this.hudVM.levelText.value = `LV ${level}`;
+    const ratio = expToNext > 0 ? Math.min(1, Math.max(0, exp / expToNext)) : 0;
+    this.hudVM.expRatio.value = ratio;
+
     this.lastHealth = -1;
     this.lastMaxHealth = -1;
     this._syncHpBar(maxHealth, maxHealth, false);
@@ -1915,7 +1385,6 @@ export class UIManager {
 
     if (this.hudLevelEl && this.hudExpFillEl) {
       this.hudLevelEl.textContent = `LV ${level}`;
-      const ratio = expToNext > 0 ? Math.min(1, Math.max(0, exp / expToNext)) : 0;
       this.hudExpFillEl.style.transform = `scaleX(${Math.max(0.01, ratio)})`;
     }
 
@@ -1945,7 +1414,6 @@ export class UIManager {
       dashCharges,
       dashRechargeProgress,
       phaseCode,
-      targetBest = 0,
       mode = GAME_MODES.ARCADE,
       level = 1,
       exp = 0,
@@ -1954,40 +1422,40 @@ export class UIManager {
       minimap = null,
     }
   ) {
-    if (maxHealth !== this.builtMaxHealth || (maxDashes !== undefined && maxDashes !== this.builtMaxDashes)) {
+    if (
+      maxHealth !== this.builtMaxHealth ||
+      (maxDashes !== undefined && maxDashes !== this.builtMaxDashes)
+    ) {
       this._buildHudPips(maxHealth, maxDashes ?? this.builtMaxDashes);
     }
 
-    if (this.hudLevelEl && this.hudExpFillEl) {
-      this.hudLevelEl.textContent = `LV ${level}`;
-      const expRatio = expToNext > 0 ? Math.min(1, Math.max(0, exp / expToNext)) : 0;
-      this.hudExpFillEl.style.transform = `scaleX(${Math.max(0.01, expRatio)})`;
-    }
+    this.hudVM.updateFrame(dt, {
+      score,
+      health,
+      maxHealth,
+      shield,
+      maxShield,
+      maxDashes: maxDashes ?? this.builtMaxDashes,
+      dashCharges,
+      dashRechargeProgress,
+      phaseCode,
+      mode,
+      level,
+      exp,
+      expToNext,
+    });
 
     if (abilityRanks) {
       this.renderLoadoutBar(this.hudLoadoutEl, abilityRanks);
     }
 
-    this.targetScore = score;
-    this.displayedScore += (this.targetScore - this.displayedScore) * (1 - Math.exp(-16 * dt));
-    const shown =
-      Math.abs(this.targetScore - this.displayedScore) < 1
-        ? Math.floor(this.targetScore)
-        : Math.floor(this.displayedScore);
-    this.scoreEl.textContent = shown.toLocaleString();
-
-    if (this.hudModeRow && this.hudModeTag) {
-      const showMode = mode !== GAME_MODES.ARCADE;
-      this.hudModeTag.classList.toggle('hidden', !showMode);
-      this.hudModeRow.classList.toggle('hidden', !showMode);
+    if (this.hudModeTag) {
+      this.hudModeTag.classList.toggle('is-daily', mode === GAME_MODES.DAILY);
     }
-
-    this.phaseEl.textContent = phaseCode;
 
     if (health !== this.lastHealth || maxHealth !== this.lastMaxHealth) {
       this._syncHpBar(health, maxHealth, this.lastHealth >= 0);
     }
-    this._syncShieldBar(shield, maxShield);
 
     for (let i = 0; i < this.dashPips.length; i++) {
       const { pip, fill } = this.dashPips[i];
@@ -2009,7 +1477,7 @@ export class UIManager {
     }
 
     if (minimap) {
-      this._renderMinimap(minimap);
+      renderMinimap(this.hudMinimapCanvas, this.hudMinimapCtx, minimap);
     }
   }
 
@@ -2017,6 +1485,8 @@ export class UIManager {
     const safeMax = Math.max(1, Math.round(maxHealth || 100));
     const cur = Math.max(0, Math.min(safeMax, Math.round(health ?? safeMax)));
     const ratio = cur / safeMax;
+
+    this.hudVM.syncHealth(health ?? safeMax, safeMax);
 
     if (this.hpTextEl) {
       this.hpTextEl.textContent = `${cur} / ${safeMax}`;
@@ -2047,6 +1517,7 @@ export class UIManager {
   }
 
   _syncShieldBar(shield = 0, maxShield = 0) {
+    this.hudVM.syncShield(shield, maxShield);
     if (!this.shieldWrapEl) return;
     const hasShield = maxShield > 0;
     this.shieldWrapEl.classList.toggle('hidden', !hasShield);
@@ -2059,157 +1530,6 @@ export class UIManager {
     if (this.shieldFillEl) {
       this.shieldFillEl.style.transform = `scaleX(${cur / safeMax})`;
     }
-  }
-
-  _renderMinimap(m) {
-    const ctx = this.hudMinimapCtx;
-    const canvas = this.hudMinimapCanvas;
-    if (!ctx || !canvas) return;
-
-    const cw = canvas.width;
-    const ch = canvas.height;
-    const pad = 8;
-    const mapW = cw - pad * 2;
-    const mapH = ch - pad * 2;
-    const sx = mapW / Math.max(1, m.worldW);
-    const sy = mapH / Math.max(1, m.worldH);
-
-    ctx.clearRect(0, 0, cw, ch);
-
-    // Subtle deep background fill + world perimeter rectangle
-    ctx.fillStyle = 'rgba(4, 10, 26, 0.65)';
-    ctx.fillRect(pad, pad, mapW, mapH);
-
-    // Subtle quadrant guide lines
-    ctx.strokeStyle = 'rgba(95, 247, 235, 0.1)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(pad + mapW * 0.5, pad);
-    ctx.lineTo(pad + mapW * 0.5, pad + mapH);
-    ctx.moveTo(pad, pad + mapH * 0.5);
-    ctx.lineTo(pad + mapW, pad + mapH * 0.5);
-    ctx.stroke();
-
-    // World outer border
-    ctx.strokeStyle = 'rgba(95, 247, 235, 0.34)';
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(pad, pad, mapW, mapH);
-
-    // Camera viewport frame clamped gently visually while preserving world-relative box
-    const vx = pad + (m.camX - m.viewW * 0.5) * sx;
-    const vy = pad + (m.camY - m.viewH * 0.5) * sy;
-    const vw = m.viewW * sx;
-    const vh = m.viewH * sy;
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(pad, pad, mapW, mapH);
-    ctx.clip();
-    ctx.fillStyle = 'rgba(95, 247, 235, 0.06)';
-    ctx.fillRect(vx, vy, vw, vh);
-    ctx.strokeStyle = 'rgba(190, 255, 248, 0.28)';
-    ctx.lineWidth = 1.25;
-    ctx.strokeRect(vx, vy, vw, vh);
-    ctx.restore();
-
-    // Collectibles (motes, prisms, shards, constellation stars)
-    const stars = [];
-    for (const item of m.items) {
-      const ix = pad + item.x * sx;
-      const iy = pad + item.y * sy;
-      if (item.type === 'star') {
-        stars.push({ x: ix, y: iy, cid: item.constellationId });
-      } else if (item.type === 'prism') {
-        ctx.fillStyle = '#9efff5';
-        ctx.beginPath();
-        ctx.moveTo(ix, iy - 4.5);
-        ctx.lineTo(ix + 4.5, iy);
-        ctx.lineTo(ix, iy + 4.5);
-        ctx.lineTo(ix - 4.5, iy);
-        ctx.closePath();
-        ctx.fill();
-      } else if (item.type === 'shard') {
-        ctx.fillStyle = '#e2a6ff';
-        ctx.beginPath();
-        ctx.arc(ix, iy, 3.2, 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        ctx.fillStyle = item.isGolden ? 'rgba(255, 227, 143, 0.85)' : 'rgba(125, 249, 255, 0.58)';
-        ctx.beginPath();
-        ctx.arc(ix, iy, item.isGolden ? 2.4 : 1.7, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-
-    if (stars.length > 0) {
-      if (stars.length > 1) {
-        ctx.strokeStyle = 'rgba(255, 228, 147, 0.45)';
-        ctx.lineWidth = 1.2;
-        ctx.beginPath();
-        for (let i = 0; i < stars.length; i++) {
-          const s1 = stars[i];
-          const s2 = stars[(i + 1) % stars.length];
-          if (s1.cid === s2.cid) {
-            ctx.moveTo(s1.x, s1.y);
-            ctx.lineTo(s2.x, s2.y);
-          }
-        }
-        ctx.stroke();
-      }
-      ctx.fillStyle = '#ffe599';
-      for (const s of stars) {
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, 3.4, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-
-    // Enemies (highlight Eclipse Core boss prominently)
-    for (const e of m.enemies) {
-      if (e.x < -30 || e.x > m.worldW + 30 || e.y < -30 || e.y > m.worldH + 30) continue;
-      const ex = pad + e.x * sx;
-      const ey = pad + e.y * sy;
-      if (e.kind === 'core' || e.isElite) {
-        ctx.strokeStyle = e.isElite ? '#ffcf7d' : '#ff6b95';
-        ctx.lineWidth = 1.8;
-        ctx.beginPath();
-        ctx.arc(ex, ey, 6.2, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.fillStyle = e.isElite ? '#ff4fa8' : '#ff2e6a';
-        ctx.beginPath();
-        ctx.arc(ex, ey, 3.4, 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        const isSpecial = e.kind === 'warden' || e.kind === 'vortex' || e.kind === 'spitter' || e.kind === 'artillery';
-        ctx.fillStyle =
-          e.kind === 'spitter' || e.kind === 'artillery'
-            ? 'rgba(218, 120, 255, 0.88)'
-            : isSpecial
-              ? 'rgba(255, 118, 92, 0.85)'
-              : 'rgba(255, 62, 112, 0.72)';
-        ctx.beginPath();
-        ctx.arc(ex, ey, isSpecial ? 2.6 : 2.0, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-
-    // Spirit (Player) marker
-    const px = pad + m.playerX * sx;
-    const py = pad + m.playerY * sy;
-    const spiritCss = hexToCss(m.spiritHex || 0x5ff7eb);
-    ctx.fillStyle = spiritCss;
-    ctx.globalAlpha = 0.28;
-    ctx.beginPath();
-    ctx.arc(px, py, 9, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(px, py, 4.0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = spiritCss;
-    ctx.lineWidth = 2;
-    ctx.stroke();
   }
 
   showPhaseBanner(phase) {
