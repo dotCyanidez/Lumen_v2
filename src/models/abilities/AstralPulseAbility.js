@@ -79,7 +79,7 @@ export class AstralPulseAbility extends BaseAbility {
     }
     if (fx?.twinPct > 0 && this.echoPulses.length < 4) {
       this.echoPulses.push({
-        radius: radius * 0.92,
+        radius: radius * 1.05,
         dmg: +(dmg * fx.twinPct).toFixed(3),
         knock: knock * 0.65,
         slow,
@@ -100,7 +100,7 @@ export class AstralPulseAbility extends BaseAbility {
 
     if (rank >= 5 && this.echoPulses.length < 4) {
       this.echoPulses.push({
-        radius: radius * (rank >= 10 ? 0.85 : 0.72),
+        radius: radius * (rank >= 10 ? 1.2 : 1.05),
         dmg: dmg * (rank >= 10 ? 0.82 : 0.62),
         knock: knock * 0.75,
         slow: slow * 1.15,

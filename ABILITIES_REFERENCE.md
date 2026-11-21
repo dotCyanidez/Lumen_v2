@@ -87,7 +87,7 @@ A complete reference of every ability, in-run upgrade card, ascension, synergy, 
 ### 2. Orbiting Blades (`solar_orbitals`)
 - **Tag:** `DAMAGE · ORBITAL`
 - **Base Description:** Summons 2 crystalline blades orbiting Lumen to slice nearby shadows.
-- **Base Stats:** `2` blades · `64px` orbit radius · `2.95 rad/s` spin · `0.40s` per-target hit cooldown · `10` base damage.
+- **Base Stats:** `2` blades · `74px` orbit radius · `2.95 rad/s` spin · `0.40s` per-target hit cooldown · `10` base damage.
 - **Ascension (`Harmonic Halo`):**
   - **LV 5+:** Orbit ring periodically scorches nearby shadows (`LV 10+` amplifies it).
 
@@ -103,7 +103,7 @@ A complete reference of every ability, in-run upgrade card, ascension, synergy, 
 | Talent | Slot | Requires | Max LV | LUM Costs | Effect per Rank (LV 1 → 4) |
 | --- | --- | --- | --- | --- | --- |
 | **Radiant Edge** (`so_edge`) | Root | — | 4 | 750 / 1200 / 1800 / 2550 | `+10% / +20% / +30% / +40%` blade dmg & `+6% / +12% / +18% / +24%` orbit speed |
-| **Solar Rays** (`so_sunray`) | Left Mid | Radiant Edge | 4 | 1140 / 1740 / 2460 / 3300 | Projects `+60 / +82 / +104 / +126px` outward blade laser dealing `35% / 50% / 65% / 85%` dmg |
+| **Solar Rays** (`so_sunray`) | Left Mid | Radiant Edge | 4 | 1140 / 1740 / 2460 / 3300 | Projects `+60 / +82 / +104 / +126px` outward blade laser dealing `25% / 35% / 45% / 55%` dmg |
 | **Corona Expansion** (`so_mirror`) | Left Cap | Solar Rays | 4 | 1650 / 2400 / 3450 / 4650 | Every `5.5s / 4.7s / 4.0s / 3.3s` surges `1.45×` outward for `1.6s` with `+25% / +40% / +55% / +75%` dmg |
 | **Void Deflector** (`so_repulse`) | Right Mid | Radiant Edge | 4 | 1140 / 1740 / 2460 / 3300 | `+25% / +50% / +75% / +100%` knockback & `-0.15s / -0.25s / -0.35s / -0.45s` Solar Dash CD on Heavy/Elite hits |
 | **Eclipse Cleave** (`so_execution`) | Right Cap | Void Deflector | 4 | 1650 / 2400 / 3450 / 4650 | `+20% / +40% / +60% / +85%` finisher dmg vs Heavy/wounded (<50% HP) · **Lifesteal:** `18% / 28% / 40% / 55%` of Blade dmg as HP |
@@ -113,10 +113,10 @@ A complete reference of every ability, in-run upgrade card, ascension, synergy, 
 ### 3. Voltaic Arc (`voltaic_chain`)
 - **Tag:** `DAMAGE · LIGHTNING`
 - **Base Description:** Strikes nearby shadows with Chain Lightning arcing across 2 targets.
-- **Base Stats:** `1.25s` interval · `300px` initial acquire reach · `225px` bounce jump reach · `2` targets · `10` base damage.
+- **Base Stats:** `1.45s` interval · `300px` initial acquire reach · `225px` bounce jump reach · `2` targets · `10` base damage.
 - **Ascension (`Ion Anchor`):**
-  - **LV 5:** Final chain hit erupts in a `72px` static shockwave (`58%` dmg).
-  - **LV 10 (Supernova):** Amplified to `96px` shockwave (`85%` dmg).
+  - **LV 5:** Final chain hit erupts in a `72px` static shockwave (`42%` dmg).
+  - **LV 10 (Supernova):** Amplified to `96px` shockwave (`62%` dmg).
 
 #### Aspect Cards
 | Aspect | Common (`1.0×`) | Uncommon (`1.6×`) | Rare (`2.25×`) | Epic (`3.0×`) | Effect |
@@ -142,7 +142,8 @@ A complete reference of every ability, in-run upgrade card, ascension, synergy, 
 - **Base Description:** Releases an automatic shockwave nova that damages & pushes shadows back.
 - **Base Stats:** `3.25s` interval · `155px` radius · `185` knockback (`-175` pull with Gravity Well) · `0.95s` slow · `10` base damage.
 - **Ascension (`Echo Wave`):**
-  - **LV 5+:** Fires a second trailing shockwave behind each nova (`LV 10+` amplifies it).
+  - **LV 5:** Fires a second trailing shockwave (`105%` radius, `62%` dmg) behind each nova.
+  - **LV 10 (Supernova):** Amplified to `120%` radius and `82%` dmg.
 
 #### Aspect Cards
 | Aspect | Common (`1.0×`) | Uncommon (`1.6×`) | Rare (`2.25×`) | Epic (`3.0×`) | Effect |
@@ -220,7 +221,7 @@ A complete reference of every ability, in-run upgrade card, ascension, synergy, 
 ### 7. Celestial Spear (`celestial_spear`)
 - **Tag:** `DAMAGE · PIERCE`
 - **Base Description:** Fires a piercing radiant beam lance through up to 3 aligned shadows.
-- **Base Stats:** `2.85s` interval · `560px` acquire range · `680px` beam length · `3` max pierce · `10` base damage.
+- **Base Stats:** `2.25s` interval · `560px` acquire range · `680px` beam length · `3` max pierce · `18` base damage.
 - **Ascension (`Afterglow Lance`):**
   - **LV 5:** Beam hangs `0.68s` and scorches crossing shadows for `42%` dmg.
   - **LV 10 (Supernova):** Beam hangs `0.95s` and scorches for `60%` dmg.

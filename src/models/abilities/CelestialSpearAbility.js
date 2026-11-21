@@ -8,7 +8,7 @@ import { BaseAbility } from './BaseAbility.js';
  */
 export class CelestialSpearAbility extends BaseAbility {
   constructor() {
-    super('celestial_spear', 2.85);
+    super('celestial_spear', 2.25);
     this.timer = 1.3;
   }
 
@@ -134,9 +134,9 @@ export class CelestialSpearAbility extends BaseAbility {
       return;
     }
 
-    this.timer = 2.85;
+    this.timer = 2.25;
     const maxPierce = 3 + (st?.pierceAdd || 0) + (fx?.extraPierce || 0);
-    const dmg = this.computeBaseDamage(st, fx, globalDmgMul);
+    const dmg = this.computeBaseDamage(st, fx, globalDmgMul, 1.8);
     const wMul = Math.min(3.2, (st?.widthMul || 1) * (fx?.widthMul || 1));
     const angle = Math.atan2(lock.enemy.y - player.y, lock.enemy.x - player.x);
     const beamLen = 680 * reachMul;

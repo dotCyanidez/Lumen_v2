@@ -7,7 +7,7 @@ import { BaseAbility } from './BaseAbility.js';
  */
 export class VoltaicArcAbility extends BaseAbility {
   constructor() {
-    super('voltaic_chain', 1.25);
+    super('voltaic_chain', 1.45);
     this.timer = 0.45;
   }
 
@@ -33,7 +33,7 @@ export class VoltaicArcAbility extends BaseAbility {
       return;
     }
 
-    this.timer = 1.25;
+    this.timer = 1.45;
     const maxTargets = 2 + (st?.targetsAdd || 0) + (fx?.extraTargets || 0);
     const baseDmg = this.computeBaseDamage(st, fx, globalDmgMul);
     const bounceReach = 225 * rMul;
@@ -131,7 +131,7 @@ export class VoltaicArcAbility extends BaseAbility {
         primary.lastX,
         primary.lastY,
         ionR,
-        baseDmg * (rank >= 10 ? 0.85 : 0.58),
+        baseDmg * (rank >= 10 ? 0.62 : 0.42),
         95,
         0.35,
         arcCb

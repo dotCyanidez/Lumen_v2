@@ -325,7 +325,7 @@ export const ABILITY_TALENTS = [
     (r) => `+${r * 10}% blade dmg & +${r * 6}% orbit speed`),
   tn('solar_orbitals', 'so_sunray', 'leftMid', 'Solar Rays', 'prism', T2_COSTS, 'so_edge',
     'Each Blade projects a sweeping outward laser ray slicing shadows beyond its orbit.',
-    (r) => `+${step([60, 82, 104, 126], r)}px outward blade laser (${step([35, 50, 65, 85], r)}% dmg)`),
+    (r) => `+${step([60, 82, 104, 126], r)}px outward blade laser (${step([25, 35, 45, 55], r)}% dmg)`),
   tn('solar_orbitals', 'so_mirror', 'leftCap', 'Corona Expansion', 'tempo', T3_COSTS, 'so_sunray',
     'Periodically expands Blades 1.45× outward for 1.6s while surging slash & laser damage.',
     (r) => `Every ${step([5.5, 4.7, 4.0, 3.3], r)}s surges 1.45× wide (+${step([25, 40, 55, 75], r)}% dmg)`),

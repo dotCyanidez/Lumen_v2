@@ -219,7 +219,7 @@ export class AbilityCanvasRenderer {
     // Soft orbital path halo & outward Sunbeam Lasers when Orbiting Blades active
     if (orbitalRank > 0) {
       const sizeMul = Math.min(2.4, orbitalSt?.sizeMul || 1);
-      const orbitR = 64 * sizeMul * reachMul * (orbitSurgeActive > 0 ? 1.45 : 1);
+      const orbitR = 74 * sizeMul * reachMul * (orbitSurgeActive > 0 ? 1.45 : 1);
       const haloStroke =
         orbitalRank >= 5 || orbitSurgeActive > 0
           ? { width: orbitalRank >= 10 ? 2.8 : 2.1, color: COLORS.lumenGold, alpha: 0.48 }
