@@ -379,4 +379,42 @@ const { CollectibleModel } = await import('../src/models/CollectibleModel.js');
   assert.equal(stepCollect.collected, true);
 }
 
-console.log('PHASE 1, 2, 3 & 4 MVVM + SOLID ARCHITECTURE VERIFICATION PASSED');
+// 10. Phase 5 PlayerModel & InputController tests (Zero PixiJS / Zero DOM mocks!)
+const { PlayerModel } = await import('../src/models/PlayerModel.js');
+const { InputController } = await import('../src/views/InputController.js');
+
+{
+  const player = new PlayerModel();
+  player.reset(500, 500, { maxHealth: 115, dashCharges: 2, speedMul: 1.05 });
+  assert.equal(player.health, 115);
+  assert.equal(player.maxHealth, 115);
+  assert.equal(player.dashCharges, 2);
+
+  // Dash consumes 1 charge & grants invulnerability
+  assert.equal(player.tryDash(1, 0), true);
+  assert.equal(player.dashCharges, 1);
+  assert.equal(player.isDashing, true);
+  assert.equal(player.isInvulnerable, true);
+
+  // Step kinematics during dash
+  const dashStep = player.stepKinematics(0.05, { moveX: 0, moveY: 0 }, 1280, 720);
+  assert.ok(player.x > 500);
+  assert.equal(dashStep.spawnGhost, true);
+
+  // Recharge dash energy
+  player.addDashEnergy(1.0);
+  assert.equal(player.dashCharges, 2);
+
+  // InputController keyboard vector test
+  const inputCtrl = new InputController({
+    ui: { isTouchMode: false },
+    _screenToWorld: (x, y) => ({ x, y }),
+  });
+  inputCtrl.keys.add('KeyD');
+  inputCtrl.keys.add('KeyW');
+  const move = inputCtrl.readMoveInput();
+  assert.equal(move.moveX, 1);
+  assert.equal(move.moveY, -1);
+}
+
+console.log('ALL 5 PHASES OF MVVM + OOP + SOLID ARCHITECTURE VERIFICATION PASSED');

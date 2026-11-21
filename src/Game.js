@@ -36,6 +36,7 @@ import {
   randRange,
   setRandomSource,
 } from './core/MathUtils.js';
+import { EventBus } from './core/EventBus.js';
 import { storage } from './core/Storage.js';
 import { AbilityManager } from './entities/Abilities.js';
 import { CollectibleManager } from './entities/Collectibles.js';
@@ -43,8 +44,11 @@ import { EnemyManager } from './entities/Enemies.js';
 import { Player } from './entities/Player.js';
 import { AbyssBackdropFilter, AtmosphereFilter } from './graphics/Shaders.js';
 import { createTextures } from './graphics/TextureFactory.js';
+import { MetaProfileModel } from './models/MetaProfileModel.js';
+import { RunSessionModel } from './models/RunSessionModel.js';
 import { SanctuaryEnvironment } from './world/Environment.js';
 import { UIManager } from './ui/UIManager.js';
+import { InputController } from './views/InputController.js';
 import { ParticleSystem } from './vfx/ParticleSystem.js';
 
 const SCORE_GAIN_SCALE = 0.625;
@@ -54,6 +58,12 @@ export class LumenGame {
     this.hostEl = hostEl;
     this.app = null;
     this.textures = null;
+
+    this.eventBus = new EventBus();
+    this.metaProfileModel = new MetaProfileModel(storage);
+    this.runSessionModel = new RunSessionModel();
+    this._combatCallbacks = null;
+    this._combatSourceCallbacks = new Map();
 
     this.state = GAME_STATES.TITLE;
     this.width = 1280;
@@ -192,15 +202,9 @@ export class LumenGame {
     this.tutorialStepTimer = 0;
 
     // Input state
-    this.keys = new Set();
-    this.pointer = {
-      active: false,
-      inside: false,
-      x: 640,
-      y: 360,
-      id: null,
-      lastTapTime: 0,
-    };
+    this.inputController = new InputController(this);
+    this.keys = this.inputController.keys;
+    this.pointer = this.inputController.pointer;
   }
 
   async init() {
@@ -265,7 +269,10 @@ export class LumenGame {
     this._setupTitleScene();
     this.ui.setGameState(GAME_STATES.TITLE, this._titlePayload());
 
-    this._bindInputs();
+    this.inputController.bindInputs(this);
+    this.app.renderer.on('resize', (w, h) => {
+      this._handleResize(w, h);
+    });
 
     this.app.ticker.add((ticker) => {
       const rawDt = Math.min(0.05, ticker.deltaMS / 1000);
@@ -274,186 +281,6 @@ export class LumenGame {
       } catch (err) {
         console.error('LUMEN frame update error:', err);
       }
-    });
-  }
-
-  _bindInputs() {
-    window.addEventListener('keydown', (e) => {
-      const code = e.code;
-      if (
-        code === 'ArrowUp' ||
-        code === 'ArrowDown' ||
-        code === 'ArrowLeft' ||
-        code === 'ArrowRight' ||
-        code === 'Space'
-      ) {
-        e.preventDefault();
-      }
-      this.audio.unlock();
-      this.keys.add(code);
-
-      if (this.blessingDraftOpen) {
-        if (this.blessingDraftLockTimer > 0) return;
-        let pickIdx = -1;
-        if (code === 'Digit1' || code === 'Numpad1') pickIdx = 0;
-        else if (code === 'Digit2' || code === 'Numpad2') pickIdx = 1;
-        else if (code === 'Digit3' || code === 'Numpad3') pickIdx = 2;
-        if (pickIdx >= 0 && !e.repeat && this.blessingOptions[pickIdx]) {
-          this.audio.playUIClick();
-          const pickedUid = this.blessingOptions[pickIdx].uid;
-          if (this.ui.banishMode) {
-            this.ui.banishMode = false;
-            this.banishDraftOption(pickedUid);
-          } else {
-            this.chooseBlessing(pickedUid);
-          }
-        }
-        return;
-      }
-
-      if (code === 'Escape' || code === 'KeyP') {
-        if (this.ui.isSanctuaryOpen?.()) {
-          this.ui.closeSanctuary();
-        } else if (this.ui.isSettingsOpen()) {
-          this.ui.closeSettings();
-        } else if (this.ui.isGuideOpen()) {
-          this.ui.closeGuide();
-        } else if (this.state === GAME_STATES.PLAYING || this.state === GAME_STATES.PAUSED) {
-          this.togglePause();
-        }
-        return;
-      }
-
-      if (code === 'KeyM' && !e.repeat) {
-        this.toggleMuteAll();
-        return;
-      }
-
-      if (
-        code === 'KeyR' &&
-        !e.repeat &&
-        (this.state === GAME_STATES.PLAYING ||
-          this.state === GAME_STATES.PAUSED ||
-          this.state === GAME_STATES.DYING ||
-          this.state === GAME_STATES.GAMEOVER)
-      ) {
-        if (this.ui.isGuideOpen()) this.ui.closeGuide();
-        this.startNewRun();
-        return;
-      }
-
-      if (this.state === GAME_STATES.PLAYING) {
-        if ((code === 'Space' || code === 'ShiftLeft' || code === 'ShiftRight') && !e.repeat) {
-          this.triggerDash();
-        }
-      } else if (this.state === GAME_STATES.GAMEOVER && this.gameOverAge > 0.55) {
-        if ((code === 'Space' || code === 'Enter') && !e.repeat) {
-          this.startNewRun();
-        }
-      }
-    });
-
-    window.addEventListener('keyup', (e) => {
-      this.keys.delete(e.code);
-    });
-
-    window.addEventListener('blur', () => {
-      this.keys.clear();
-      this.pointer.active = false;
-      if (this.state === GAME_STATES.PLAYING) {
-        this.pauseGame();
-      }
-    });
-
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden && this.state === GAME_STATES.PLAYING) {
-        this.pauseGame();
-      }
-    });
-
-    const canvas = this.app.canvas;
-
-    canvas.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      this.audio.unlock();
-      if (this.state === GAME_STATES.PLAYING) {
-        const rect = canvas.getBoundingClientRect();
-        const tx = e.clientX - rect.left;
-        const ty = e.clientY - rect.top;
-        this.triggerDash(tx - this.player.x, ty - this.player.y);
-      }
-    });
-
-    canvas.addEventListener('pointerdown', (e) => {
-      this.audio.unlock();
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      if (e.pointerType === 'touch') {
-        this.ui.enableTouchControls();
-      }
-
-      if (e.button === 2) {
-        if (this.state === GAME_STATES.PLAYING) {
-          const wp = this._screenToWorld(x, y);
-          this.triggerDash(wp.x - this.player.x, wp.y - this.player.y);
-        }
-        return;
-      }
-
-      // Secondary finger tap on touch triggers Dash seamlessly!
-      if (this.pointer.active && e.pointerId !== this.pointer.id && this.state === GAME_STATES.PLAYING) {
-        this.triggerDash();
-        return;
-      }
-
-      this.pointer.active = true;
-      this.pointer.inside = true;
-      this.pointer.id = e.pointerId;
-      this.pointer.x = x;
-      this.pointer.y = y;
-    });
-
-    window.addEventListener('pointermove', (e) => {
-      const rect = canvas.getBoundingClientRect();
-      this.pointer.x = e.clientX - rect.left;
-      this.pointer.y = e.clientY - rect.top;
-      this.pointer.inside =
-        this.pointer.x >= 0 &&
-        this.pointer.y >= 0 &&
-        this.pointer.x <= this.width &&
-        this.pointer.y <= this.height;
-
-      if (this.state === GAME_STATES.TITLE && this.pointer.inside && this.titleCursorSparkTimer <= 0) {
-        this.titleCursorSparkTimer = 0.045;
-        const wp = this._screenToWorld(this.pointer.x, this.pointer.y);
-        this.particles.emitTrailEmber(
-          wp.x,
-          wp.y,
-          (Math.random() - 0.5) * 40,
-          (Math.random() - 0.5) * 40,
-          Math.random() < 0.35 ? COLORS.lumenGold : COLORS.lumenCyan
-        );
-      }
-    });
-
-    window.addEventListener('pointerup', (e) => {
-      if (e.pointerId === this.pointer.id) {
-        this.pointer.active = false;
-        this.pointer.id = null;
-      }
-    });
-
-    window.addEventListener('pointercancel', (e) => {
-      if (e.pointerId === this.pointer.id) {
-        this.pointer.active = false;
-        this.pointer.id = null;
-      }
-    });
-
-    this.app.renderer.on('resize', (w, h) => {
-      this._handleResize(w, h);
     });
   }
 
@@ -1016,21 +843,7 @@ export class LumenGame {
   }
 
   _readMoveInput() {
-    let mx = 0;
-    let my = 0;
-    if (this.keys.has('KeyA') || this.keys.has('ArrowLeft')) mx -= 1;
-    if (this.keys.has('KeyD') || this.keys.has('ArrowRight')) mx += 1;
-    if (this.keys.has('KeyW') || this.keys.has('ArrowUp')) my -= 1;
-    if (this.keys.has('KeyS') || this.keys.has('ArrowDown')) my += 1;
-    const hoverGlide = storage.cursorGlide && this.pointer.inside && !this.ui.isTouchMode;
-    const wp = this._screenToWorld(this.pointer.x, this.pointer.y);
-    return {
-      moveX: mx,
-      moveY: my,
-      pointerActive: this.pointer.active || hoverGlide,
-      pointerX: wp.x,
-      pointerY: wp.y,
-    };
+    return this.inputController.readMoveInput(this);
   }
 
   triggerDash(overrideDx, overrideDy, fromBuffer = false) {
@@ -1212,7 +1025,7 @@ export class LumenGame {
         novaDmg,
         145,
         0.35,
-        { ...this._getCombatCallbacks(), sourceAbility: 'gravity_harvest' }
+        this._getCombatCallbacks('gravity_harvest')
       );
       this.particles.emitShockRing(this.player.x, this.player.y, 0.16, novaR / 58, COLORS.lumenCyan, 0.36, 0.6);
     }
@@ -1226,7 +1039,7 @@ export class LumenGame {
         +(gravFx.specialNovaDmg * dmgBonus).toFixed(3),
         140,
         0.3,
-        { ...this._getCombatCallbacks(), sourceAbility: 'gravity_harvest' }
+        this._getCombatCallbacks('gravity_harvest')
       );
       if (gravFx.specialDashEnergy > 0) {
         this.player.addDashEnergy(gravFx.specialDashEnergy);
@@ -1244,8 +1057,8 @@ export class LumenGame {
     return getGroupTalentEffects(abilityId, storage.data.talentRanks);
   }
 
-  _getCombatCallbacks() {
-    return {
+  _getCombatCallbacks(sourceAbility = null) {
+    this._combatCallbacks ||= {
       onPurge: (ex, ey, kind, isElite) => this._onPurgeEnemy(ex, ey, kind, isElite),
       onEnemyHit: (ex, ey) => this._onEnemyHit(ex, ey),
       onHit: (ex, ey, damage) => this._onHitPlayer(ex, ey, damage),
@@ -1263,11 +1076,15 @@ export class LumenGame {
       },
       onCoreCrack: (cx, cy, rem) => this._onCoreCrack(cx, cy, rem),
       onCoreShatter: (cx, cy) => this._onCoreShatter(cx, cy),
-      onDamageNumber: (ex, ey, amount, isDot = false, isCrit = false, sourceAbility = null) => {
+      onDamageNumber: (ex, ey, amount, isDot = false, isCrit = false, src = null) => {
         if (this.state !== GAME_STATES.PLAYING || !this.particles?.calloutLayer?.visible) return;
         const sp = this._worldToScreen(ex, ey);
         if (sp.x < -30 || sp.x > this.width + 30 || sp.y < -30 || sp.y > this.height + 30) return;
-        this.particles.spawnDamageNumber(sp.x, sp.y, amount, { isDot, isCrit, sourceAbility });
+        this.particles.spawnDamageNumber(sp.x, sp.y, amount, {
+          isDot,
+          isCrit,
+          sourceAbility: src,
+        });
       },
       onAbilityDamage: (id, dmg, killed, isDot) => {
         this.abilities.recordDamage(id, dmg, killed, isDot);
@@ -1299,6 +1116,15 @@ export class LumenGame {
       onDashCdrSeconds: (sec) =>
         this.player.addDashEnergy(sec / PLAYER_CONFIG.dashRechargeTime),
     };
+
+    if (!sourceAbility) return this._combatCallbacks;
+    this._combatSourceCallbacks ||= new Map();
+    let wrapped = this._combatSourceCallbacks.get(sourceAbility);
+    if (!wrapped) {
+      wrapped = { ...this._combatCallbacks, sourceAbility };
+      this._combatSourceCallbacks.set(sourceAbility, wrapped);
+    }
+    return wrapped;
   }
 
   _onVoidParry(cx, cy) {
@@ -1447,7 +1273,7 @@ export class LumenGame {
       pulseDmg,
       180,
       0.4,
-      { ...this._getCombatCallbacks(), sourceAbility: 'astral_shield' }
+      this._getCombatCallbacks('astral_shield')
     );
     this.particles.emitShockRing(this.player.x, this.player.y, 0.16, 140 / 56, 0x7ec8ff, 0.36, 0.6);
   }
@@ -1817,7 +1643,7 @@ export class LumenGame {
           +(aegisFx.novaDmg * dmgBonus).toFixed(3),
           220,
           0.42,
-          { ...this._getCombatCallbacks(), sourceAbility: 'aegis_bloom' }
+          this._getCombatCallbacks('aegis_bloom')
         );
         if (aegisFx.novaSpeedBonus > 0) {
           this.aegisSpeedTimer = 1.6;
@@ -1876,7 +1702,7 @@ export class LumenGame {
       dmg = shieldRes.remainingDamage;
 
       if (shieldRes.reflectDmg > 0) {
-        const shieldCb = { ...this._getCombatCallbacks(), sourceAbility: 'astral_shield' };
+        const shieldCb = this._getCombatCallbacks('astral_shield');
         const hits = this.enemies.damageRadius(
           this.player.x,
           this.player.y,
@@ -1909,7 +1735,7 @@ export class LumenGame {
           shieldRes.overloadDmg,
           340,
           0.5,
-          { ...this._getCombatCallbacks(), sourceAbility: 'astral_shield' }
+          this._getCombatCallbacks('astral_shield')
         );
         this.player.invulnTimer = Math.max(this.player.invulnTimer, 0.55);
         this.particles.emitShockRing(this.player.x, this.player.y, 0.2, 3.0, 0x99d6ff, 0.45, 0.78);
@@ -1923,7 +1749,7 @@ export class LumenGame {
         this._callout(
           this.player.x,
           this.player.y - 24,
-          shieldBroken ? 'SHIELD SHATTERED!' : `-${Math.round(absorbed)} SHIELD`,
+          shieldRes.shieldBroken ? 'SHIELD SHATTERED!' : `-${Math.round(shieldRes.absorbed)} SHIELD`,
           '#7ec8ff',
           1.08
         );
@@ -2441,7 +2267,7 @@ export class LumenGame {
               +(aegisFx.bulwarkPulseDmg * dmgBonus).toFixed(3),
               140,
               0.3,
-              { ...this._getCombatCallbacks(), sourceAbility: 'aegis_bloom' }
+              this._getCombatCallbacks('aegis_bloom')
             );
             if (hits > 0) {
               this.particles.emitShockRing(this.player.x, this.player.y, 0.14, 1.65, 0xb9fff8, 0.32, 0.5);
@@ -2761,3 +2587,5 @@ export class LumenGame {
     this.atmosphereFilter.sync();
   }
 }
+
+export { LumenGame as Game, LumenGame as GameCoordinator };

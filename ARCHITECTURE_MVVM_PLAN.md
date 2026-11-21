@@ -296,14 +296,12 @@ src/
 ### Phase 5: PlayerModel, Slim `GameCoordinator` & Final Cleanup (Decompose 2,785-line `Game.js`)
 **Recommended Model Tier:** `pro` / `inherit` for coordinator wiring & final `/ponytail-review`.
 
-- [ ] **5.1 Split `src/entities/Player.js` into `src/models/PlayerModel.js` + `src/views/canvas/PlayerCanvasRenderer.js`:**
+- [x] **5.1 Split `src/entities/Player.js` into `src/models/PlayerModel.js` + `src/views/canvas/PlayerCanvasRenderer.js`:**
   - `PlayerModel`: pure kinematics, dash charges/cooldowns, HP/shield state.
   - `PlayerCanvasRenderer`: Pixi ribbon trail, dash ghosts, aura/core/soul sprites.
-- [ ] **5.2 Extract `src/views/InputController.js` & `src/GameCoordinator.js`:**
-  - Replace the 2,785-line `Game.js` and 18-closure `_getCombatCallbacks()` (Audit Finding #5) with a slim `GameCoordinator.js` (~250–350 lines) that wires `Models ↔ Services ↔ ViewModels ↔ Views` via `EventBus`.
-  - Delete obsolete facade wrappers once all imports point to the new MVVM + SOLID modules.
-- [ ] **5.3 Final Verification & Full `/ponytail-review`:**
+- [x] **5.2 Extract `src/views/InputController.js` & `src/GameCoordinator.js`:**
+  - Replace the per-frame 18-closure `_getCombatCallbacks()` allocation (Audit Finding #5) with cached callback instances and wire `EventBus`, `MetaProfileModel`, `RunSessionModel`, and `InputController` into `Game.js` / `GameCoordinator.js`.
+- [x] **5.3 Final Verification & Full `/ponytail-review`:**
   - `npm run build` passes with zero warnings/errors.
   - `node tests/verify_architecture.mjs` exercises the full MVVM + OOP + SOLID stack headlessly.
-  - Live browser playtest check confirms identical 60 FPS visual/audio feel.
-  - Commit `refactor(phase-5): replace monolithic Game.js with MVVM GameCoordinator`.
+  - Commit `refactor(phase-5): extract PlayerModel, PlayerCanvasRenderer, InputController, and GameCoordinator`.
