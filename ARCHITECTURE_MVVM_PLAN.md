@@ -260,17 +260,17 @@ src/
 ### Phase 3: OOP Enemy Hierarchy & Canvas Renderer (Decompose 2,247-line `Enemies.js`)
 **Recommended Model Tier:** `pro` / `inherit` for `BaseEnemy` & `EclipseCoreBoss` + `flash` to extract the remaining 10 enemy classes.
 
-- [ ] **3.1 Create `src/models/enemies/BaseEnemy.js` & `EnemyProjectile.js`:**
+- [x] **3.1 Create `src/models/enemies/BaseEnemy.js` & `EnemyProjectile.js`:**
   - `BaseEnemy`: encapsulates `kind`, `x`, `y`, `vx`, `vy`, `radius`, `hp`, `maxHp`, `spawnDelay`, `age`, `life`, `slowTimer`, `burnTimer`, `burnDps`, `markTimer`, `markMul`, `takeDamage(amount, opts)` (LSP-compliant!), `applyBurn(dps, dur, tint, source)`, `isAlive()`, `isTargetable()`, and abstract `updateAI(dt, ctx)`.
   - Strip dead `grazeCooldown` and `grazed` fields (Audit Finding #7).
-- [ ] **3.2 Extract 11 Polymorphic Enemy Subclasses (`src/models/enemies/*.js`):**
+- [x] **3.2 Extract 11 Polymorphic Enemy Subclasses (`src/models/enemies/*.js`):**
   - `StalkerEnemy`, `MantaEnemy`, `SentinelEnemy`, `LancerEnemy`, `SpitterEnemy`, `ArtilleryEnemy`, `WardenEnemy`, `VortexEnemy`, `HarbingerElite`, `BehemothElite`, and `EclipseCoreBoss` (overrides `takeDamage()` for 10-HP-per-petal shield math & Void Parry).
   - Register all 11 in `EnemyRegistry.js` (Open/Closed Principle: adding a 12th enemy only registers a new class).
-- [ ] **3.3 Separate `src/views/canvas/EnemyCanvasRenderer.js`:**
+- [x] **3.3 Separate `src/views/canvas/EnemyCanvasRenderer.js`:**
   - Moves all PixiJS `Container`/`Graphics`/`Sprite` creation, telegraph drawing, HP pip drawing (`_drawHpPips`), and Eclipse Core petal drawing (`_drawCoreShield`) out of enemy models into `EnemyCanvasRenderer`.
-- [ ] **3.4 Extend `tests/verify_architecture.mjs`:**
+- [x] **3.4 Extend `tests/verify_architecture.mjs`:**
   - Instantiate every single enemy class (`stalker` through `core`) in pure Node (no Pixi mock needed!), run `updateAI(dt, ctx)` and `takeDamage(10)`, and assert lunge/shoot/split/shield-crack behavior.
-- [ ] **3.5 Gate 3 Verification & `/ponytail-review`:**
+- [x] **3.5 Gate 3 Verification & `/ponytail-review`:**
   - `npm run build` passes + `node tests/verify_architecture.mjs` passes + `/ponytail-review` sign-off + commit `refactor(phase-3): extract polymorphic OOP enemy models and canvas renderer`.
 
 ---

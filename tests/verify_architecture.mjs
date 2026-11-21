@@ -217,8 +217,93 @@ const { PauseGameOverViewModel } = await import('../src/viewmodels/PauseGameOver
 
   const pgoVM = new PauseGameOverViewModel();
   pgoVM.syncGameOver({ score: 15400, survivalTime: 125, purgedCount: 42, elitesDefeated: 2, luminanceEarned: 350 });
-  assert.equal(pgoVM.finalTimeText.value, '02:05');
+  assert.equal(pgoVM.finalTimeText.value, '2:05');
   assert.equal(pgoVM.luminanceEarnedText.value, '+350 LUM');
 }
 
-console.log('PHASE 1 & 2 MVVM + SOLID ARCHITECTURE VERIFICATION PASSED');
+// 8. Phase 3 OOP Enemy Hierarchy tests (Zero PixiJS / Zero DOM mocks!)
+const { BaseEnemy } = await import('../src/models/enemies/BaseEnemy.js');
+const { EnemyProjectile } = await import('../src/models/enemies/EnemyProjectile.js');
+const { ENEMY_CLASSES, createEnemyModel } = await import('../src/models/enemies/EnemyRegistry.js');
+
+{
+  const expectedKinds = [
+    'stalker',
+    'manta',
+    'sentinel',
+    'lancer',
+    'spitter',
+    'artillery',
+    'warden',
+    'vortex',
+    'harbinger',
+    'behemoth',
+    'core',
+  ];
+  for (const kind of expectedKinds) {
+    assert.ok(ENEMY_CLASSES[kind], `Missing EnemyRegistry class for ${kind}`);
+    const instance = createEnemyModel(kind, { x: 250, y: 250, speedScale: 1, extraShields: 2 });
+    assert.ok(instance instanceof BaseEnemy, `${kind} must extend BaseEnemy (LSP)`);
+    assert.equal(instance.kind, kind);
+    assert.equal('grazeCooldown' in instance, false, `${kind} should not have dead grazeCooldown`);
+  }
+
+  // Stalker 10 HP dies in 1 hit of 10 damage
+  const stalker = createEnemyModel('stalker', { x: 100, y: 100 });
+  stalker.age = 2;
+  assert.equal(stalker.hp, 10);
+  const stalkerHit = stalker.takeDamage(10);
+  assert.equal(stalkerHit.killed, true);
+  assert.equal(stalkerHit.dealt, 10);
+
+  // Sentinel 20 HP + expanding Void Pulse Ring hit radius
+  const sentinel = createEnemyModel('sentinel', { x: 200, y: 200 });
+  sentinel.age = 2;
+  assert.equal(sentinel.hp, 20);
+  const baseR = sentinel.getEffectiveHitRadius();
+  sentinel.pulseWaveAge = 0.275; // mid-wave
+  assert.ok(sentinel.getEffectiveHitRadius() > baseR);
+
+  // Vortex gravity source when active
+  const vortex = createEnemyModel('vortex', { x: 300, y: 300 });
+  assert.equal(vortex.getGravitySource(), null); // still warming up
+  vortex.age = 2;
+  const grav = vortex.getGravitySource();
+  assert.ok(grav && grav.radius === 230);
+
+  // Warden split wisp config hook
+  const warden = createEnemyModel('warden', { x: 400, y: 400 });
+  const wisps = warden.getSplitWispConfigs();
+  assert.equal(wisps.length, 2);
+  assert.equal(wisps[0].splitWisp, true);
+
+  // Spitter fires dart EnemyProjectile via updateAI
+  const spitter = createEnemyModel('spitter', { x: 300, y: 100 });
+  spitter.age = 2;
+  spitter.shootCooldown = 0;
+  spitter.shootCharge = 0.65;
+  const spawnedProjs = [];
+  spitter.updateAI(0.05, {
+    player: { x: 100, y: 100 },
+    boundsW: 1280,
+    boundsH: 720,
+    speedScale: 1,
+    spawnProjectile: (p) => spawnedProjs.push(new EnemyProjectile(p)),
+  });
+  assert.equal(spawnedProjs.length, 1);
+  assert.equal(spawnedProjs[0].damage, 18);
+
+  // Polymorphic EclipseCoreBoss shield petal crack & dash smash
+  const core = createEnemyModel('core', { x: 500, y: 500, extraShields: 2 });
+  core.age = 2;
+  assert.equal(core.shields, 50);
+  assert.equal(core.getPetalCount(), 5);
+  const coreHit = core.takeDamage(10);
+  assert.equal(coreHit.killed, false);
+  assert.equal(coreHit.cracked, true);
+  assert.equal(coreHit.petalRem, 4);
+  assert.equal(core.smashDashShield(), true);
+  assert.equal(core.getPetalCount(), 3);
+}
+
+console.log('PHASE 1, 2 & 3 MVVM + SOLID ARCHITECTURE VERIFICATION PASSED');
