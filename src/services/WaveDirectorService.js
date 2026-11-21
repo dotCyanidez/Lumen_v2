@@ -34,23 +34,31 @@ export class WaveDirectorService {
     return 0;
   }
 
+  static getOverdriveDamageMul(overdriveTier = 0) {
+    const od = Math.max(0, overdriveTier);
+    return +(1 + od * 0.14 + Math.max(0, od - 8) * 0.08).toFixed(3);
+  }
+
   static buildEffectivePhase(phase, overdriveTier = 0, difficulty = null, dailyTwist = null) {
     const baseHpBonus = WaveDirectorService.getBaseHpBonusForPhase(phase);
+    const od = Math.max(0, overdriveTier);
+    const lateHpCurve = od > 5 ? Math.floor(Math.pow(od - 5, 1.35)) : 0;
     return {
       ...phase,
-      maxEnemies: Math.min(36, phase.maxEnemies + overdriveTier * 3),
+      maxEnemies: Math.min(36, phase.maxEnemies + od * 3),
       spawnInterval: Math.max(
         0.26,
-        (phase.spawnInterval - overdriveTier * 0.04) / (difficulty?.spawnRateMul || 1)
+        (phase.spawnInterval - od * 0.04) / (difficulty?.spawnRateMul || 1)
       ),
       speedScale: Math.min(
         2.05,
-        (phase.speedScale + overdriveTier * 0.07) *
+        (phase.speedScale + od * 0.07) *
           (difficulty?.enemySpeedMul || 1) *
           (dailyTwist?.enemySpeedMul || 1)
       ),
-      hpBonus: baseHpBonus + overdriveTier,
+      hpBonus: baseHpBonus + od + lateHpCurve,
       hpMul: difficulty?.hpMul || 1,
+      overdriveDmgMul: WaveDirectorService.getOverdriveDamageMul(od),
     };
   }
 

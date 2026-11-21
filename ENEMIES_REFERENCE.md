@@ -205,10 +205,13 @@ $$
 \text{overdriveTier} = \max\Big(0,\;\Big\lfloor \max\Big(\frac{\text{survivalTime} - 108}{26},\; \min\Big(\frac{\text{score} - 13750}{4500},\; \frac{\text{survivalTime} - 108}{26} + 1\Big)\Big) \Big\rfloor\Big)
 $$
 - Every Overdrive tier cycles through the 4 Wave Banners (`PRISM DRIFT`, `VIOLET GALE`, `LANCER CHORUS`, `SOLAR ECLIPSE`) and drops a `30` LUM Shard.
+- **Overdrive Enemy Damage Multiplier (`WaveDirectorService.getOverdriveDamageMul`):**
+  $$\text{overdriveDmgMul} = 1 + 0.14 \cdot \text{overdriveTier} + 0.08 \cdot \max(0, \text{overdriveTier} - 8)$$
+  *(Applied to all incoming contact, projectile, and shockwave damage in `Game.js`: `1.00×` in Ph 1–5, `1.70×` at `OD+5`, `2.56×` at `OD+10`, `4.76×` at `OD+20`.)*
 
-### 2. Enemy HP Scaling (`_ensureCombatStats`)
-First, additive `hpBonus` is calculated:
-$$\text{hpBonus} = \text{baseHpBonus}\; (\text{0 in Ph 1–3, 1 in Ph 4, 2 in Ph 5}) + \text{overdriveTier}$$
+### 2. Enemy HP Scaling (`BaseEnemy.computeScaledHp`)
+First, additive `hpBonus` is calculated (with super-linear scaling past `OD+5`):
+$$\text{hpBonus} = \text{baseHpBonus}\; (\text{0 in Ph 1–3, 1 in Ph 4, 2 in Ph 5}) + \text{overdriveTier} + \lfloor \max(0, \text{overdriveTier} - 5)^{1.35} \rfloor$$
 
 Then `scaledHp = baseHp + bonusByKind`, and multiplied by `hpMul`:
 - **Stalker / Manta / Spitter:** `+hpBonus × 10`

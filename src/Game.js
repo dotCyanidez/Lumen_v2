@@ -1688,7 +1688,8 @@ export class LumenGame {
       return;
     }
 
-    let dmg = Math.max(1, Math.round(damage));
+    const odDmgMul = WaveDirectorService.getOverdriveDamageMul(this.overdriveTier);
+    let dmg = Math.max(1, Math.round(damage * odDmgMul));
     if (this.player.shield > 0) {
       const dmgBonus = (this.upgradeFx?.globalDmgMul || 1) * (this.activeDailyTwist?.dmgMul || 1);
       const shieldRes = CombatService.resolveShieldAbsorption({

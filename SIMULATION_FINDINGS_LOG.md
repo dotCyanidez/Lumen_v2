@@ -63,4 +63,22 @@
 
 - **Elites (Unchanged):** Harbinger (`420` base HP) and Dreadnought (`640` base HP) already hit `19–27s` Normal, `27–39s` Hard, and `38–54s` Nightmare (well under `95–100s` despawn).
 
+---
+
+## Simulation #6 — Meta-Progression Survival Ceiling (`0 → 30:00`) (`2026-11-21` — APPLIED)
+
+**Changes Applied:**
+- `WaveDirectorService.getOverdriveDamageMul(od)`: `1 + od * 0.14 + max(0, od - 8) * 0.08` applied to incoming player damage in `Game.js`.
+- `WaveDirectorService.buildEffectivePhase()`: Super-linear late `hpBonus` (`+floor((od - 5)^1.35)` past `OD+5`).
+- `Constants.js` → `getLevelMaxHpBonus(level)`: Soft-capped to `+6 HP/lv` past `LV 20` (unchanged for `LV 1–20`).
+
+**Result (`5` runs/cell × `2` bots × `3` difficulties):** 30-minute immortality runs dropped from **`29/120`** to **`1/120`** (only 1 T3 Pro Kiter god-roll on Normal):
+- **Normal:** `T0` `4:52–4:55` (`2.4k–3.1k LUM`) · `T1` `4:35–5:28` · `T2` `9:46–16:41` (`15k–76k LUM`) · `T3` `8:35–12:55` (`33k–69k LUM`)
+- **Hard:** `T0` `4:59–7:35` → `T2` `7:19–8:58` → `T3` `7:54–9:14` (`0/30` hit 30m)
+- **Nightmare:** `T0` `3:59–4:46` → `T2` `6:34–6:44` → `T3` `6:25–8:13` (`0/30` hit 30m)
+
+### Deferred Tuning Note
+- Early Sanctuary Tier 1 (`+1.5%` per rank) feels flat compared to `T0`; consider front-loading early Sanctuary ranks (`+3%`/rank) or adding a `+HP` Sanctuary node later if early meta-progression feels slow.
+
+
 

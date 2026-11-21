@@ -100,12 +100,12 @@ export function getExpForNextLevel(level) {
   return Math.round((45 + step * 30 + step * step * 3.5) / 5) * 5;
 }
 
-/** Cumulative Max HP gained from Spirit level progression (scales up per level). */
+/** Cumulative Max HP gained from Spirit level progression (soft-capped past LV 20). */
 export function getLevelMaxHpBonus(level) {
   const lv = Math.max(1, Math.floor(level));
   let bonus = 0;
   for (let l = 2; l <= lv; l++) {
-    bonus += 4 + Math.ceil(l * 0.8);
+    bonus += l <= 20 ? 4 + Math.ceil(l * 0.8) : 6;
   }
   return bonus;
 }
