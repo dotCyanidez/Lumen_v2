@@ -595,7 +595,8 @@ export class LumenGame {
         applyUpgradeOption(opts[0], this.abilityRanks, this.buildState);
       }
     }
-    this._syncLevelMaxHealth(true);
+    this._syncMaxHealth(true);
+    this._syncShieldState(true);
     this._syncPlayerCardModifiers();
     this._callout(
       this.player.x,
