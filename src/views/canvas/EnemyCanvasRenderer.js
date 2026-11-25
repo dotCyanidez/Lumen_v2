@@ -283,7 +283,7 @@ export class EnemyCanvasRenderer {
           const a = (i * Math.PI * 2) / 3;
           fins
             .arc(0, 0, 34, a - 0.35, a + 0.35)
-            .stroke({ width: 3.2, color: 0xffb36b, alpha: 0.85 });
+            .stroke({ width: 3.2, color: 0xff6b8b, alpha: 0.88 });
         }
         const core = new Graphics().circle(0, 0, 9.5).fill({ color: 0xff3b78, alpha: 0.96 });
         root.addChild(rim, fins, armor, core);
@@ -807,7 +807,7 @@ export class EnemyCanvasRenderer {
   }
 
   drawHpPips(enemy, time = 0) {
-    const r = enemy.radius + 7;
+    const r = enemy.radius + (enemy.isElite ? 14 : 7);
     const ratio = clamp(enemy.hp / enemy.maxHp, 0, 1);
     const low = enemy.hp <= 10.001;
     const color = low ? COLORS.lumenGold : 0xff76a8;
