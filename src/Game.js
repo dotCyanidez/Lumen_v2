@@ -839,7 +839,7 @@ export class LumenGame {
   }
 
   pauseGame() {
-    if (this.state !== GAME_STATES.PLAYING) return;
+    if (this.state !== GAME_STATES.PLAYING || this.blessingDraftOpen) return;
     this.state = GAME_STATES.PAUSED;
     this.particles.calloutLayer.visible = false;
     this.audio.playUIClick();
@@ -864,6 +864,7 @@ export class LumenGame {
     if (this.state !== GAME_STATES.PAUSED) return;
     this.audio.playUIClick();
     this.state = GAME_STATES.PLAYING;
+    this.hitStopTimer = 0;
     this.particles.calloutLayer.visible = true;
     this.audio.setAmbientMood({
       intensity: this.currentPhaseIndex / (PHASES.length - 1),
@@ -871,6 +872,14 @@ export class LumenGame {
       active: true,
     });
     this.ui.setGameState(GAME_STATES.PLAYING);
+    if (this.app?.ticker && !this.app.ticker.started) {
+      this.app.ticker.start();
+    }
+    if (this.blessingDraftOpen && this.blessingOptions?.length > 0) {
+      this._renderActiveBlessingDraft();
+    } else {
+      this.blessingDraftOpen = false;
+    }
   }
 
   _setupTitleScene() {
