@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LUMEN — Visual Asset & Balance Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #040814;
+        --panel: rgba(10, 18, 38, 0.86);
+        --border: rgba(95, 247, 235, 0.22);
+        --cyan: #5ff7eb;
+        --gold: #ffe699;
+        --crimson: #ff4d7d;
+        --text: #eaf6ff;
+        --muted: #8ea9c4;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at 50% 0%, #0b1b3a 0%, var(--bg) 62%);
+        color: var(--text);
+        font-family: 'Outfit', system-ui, sans-serif;
+      }
+      header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(4, 8, 20, 0.85);
+        backdrop-filter: blur(10px);
+        position: sticky;
+        top: 0;
+        z-index: 20;
+      }
+      .brand {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+      }
+      .brand h1 {
+        margin: 0;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.7rem;
+        letter-spacing: 0.14em;
+        color: #fff;
+      }
+      .brand span {
+        font-size: 0.78rem;
+        letter-spacing: 0.18em;
+        color: var(--cyan);
+        text-transform: uppercase;
+      }
+      nav.tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .tab-btn, .ctrl-btn, .nav-link {
+        border: 1px solid var(--border);
+        background: rgba(15, 28, 56, 0.72);
+        color: var(--text);
+        padding: 8px 14px;
+        border-radius: 999px;
+        font: 500 0.82rem 'Outfit', sans-serif;
+        letter-spacing: 0.06em;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.16s ease;
+      }
+      .tab-btn:hover, .ctrl-btn:hover, .nav-link:hover {
+        border-color: var(--cyan);
+        background: rgba(95, 247, 235, 0.14);
+      }
+      .tab-btn.active, .ctrl-btn.active {
+        background: linear-gradient(135deg, rgba(95, 247, 235, 0.28), rgba(255, 230, 153, 0.18));
+        border-color: var(--cyan);
+        color: #fff;
+        box-shadow: 0 0 18px rgba(95, 247, 235, 0.22);
+      }
+      .nav-links { display: flex; gap: 8px; }
+      main {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 20px 24px 48px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .stage-card {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--panel);
+        overflow: hidden;
+        box-shadow: 0 14px 44px rgba(0, 0, 0, 0.45);
+      }
+      .stage-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(95, 247, 235, 0.14);
+      }
+      .stage-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--gold);
+        letter-spacing: 0.04em;
+      }
+      .stage-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .ctrl-btn {
+        padding: 5px 11px;
+        font-size: 0.76rem;
+      }
+      #preview-stage {
+        width: 100%;
+        height: 360px;
+        position: relative;
+        background: #040814;
+      }
+      #preview-stage canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .stage-labels {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      .stage-label {
+        position: absolute;
+        transform: translate(-50%, 0);
+        font-size: 0.72rem;
+        letter-spacing: 0.06em;
+        color: rgba(234, 246, 255, 0.88);
+        text-shadow: 0 1px 6px #000;
+        white-space: nowrap;
+        text-align: center;
+      }
+      .stage-label small {
+        display: block;
+        font-size: 0.64rem;
+        color: var(--muted);
+      }
+      .detail-panel {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--panel);
+        padding: 16px 18px;
+      }
+      .detail-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .detail-head h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #fff;
+      }
+      .tag {
+        font-size: 0.7rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 3px 9px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 230, 153, 0.35);
+        color: var(--gold);
+      }
+      .stats-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 10px 0 4px;
+      }
+      .stat-pill {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 6px 11px;
+        font-size: 0.8rem;
+      }
+      .stat-pill b { color: var(--cyan); }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 10px;
+      }
+      .item-card {
+        border: 1px solid rgba(95, 247, 235, 0.16);
+        background: rgba(11, 20, 42, 0.78);
+        border-radius: 12px;
+        padding: 12px 14px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        text-align: left;
+        color: var(--text);
+        font-family: inherit;
+      }
+      .item-card:hover {
+        border-color: var(--cyan);
+        transform: translateY(-2px);
+      }
+      .item-card.active {
+        border-color: var(--gold);
+        background: rgba(95, 247, 235, 0.12);
+        box-shadow: 0 0 18px rgba(255, 230, 153, 0.16);
+      }
+      .item-card h3 {
+        margin: 0 0 4px;
+        font-size: 0.94rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+      }
+      .item-card p {
+        margin: 0;
+        font-size: 0.77rem;
+        color: var(--muted);
+        line-height: 1.38;
+      }
+      .swatch {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        display: inline-block;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        flex-shrink: 0;
+      }
+      .sub-section {
+        margin-top: 14px;
+      }
+      .sub-section h3 {
+        margin: 0 0 8px;
+        font-size: 0.82rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cyan);
+      }
+      .talent-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 8px;
+      }
+      .talent-box {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 10px;
+        padding: 9px 11px;
+        font-size: 0.78rem;
+      }
+      .talent-box strong { color: var(--gold); display: block; margin-bottom: 2px; }
+      .talent-box small { color: var(--muted); display: block; margin-top: 3px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <h1>LUMEN</h1>
+        <span>Live Preview Studio</span>
+      </div>
+      <nav class="tabs" id="preview-tabs">
+        <button class="tab-btn active" data-tab="enemies">Enemies &amp; Bosses (11)</button>
+        <button class="tab-btn" data-tab="spirits">Spirits, Palettes &amp; Trails</button>
+        <button class="tab-btn" data-tab="abilities">Abilities &amp; Talents (11)</button>
+        <button class="tab-btn" data-tab="pickups">Pickups &amp; FX (5)</button>
+      </nav>
+      <div class="nav-links">
+        <a class="nav-link" href="/">Play Game</a>
+        <a class="nav-link" href="/?dev=1">Play (?dev=1)</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="stage-card">
+        <div class="stage-toolbar">
+          <div class="stage-title" id="stage-title">Live PixiJS Showcase</div>
+          <div class="stage-controls" id="stage-controls"></div>
+        </div>
+        <div id="preview-stage">
+          <div class="stage-labels" id="stage-labels"></div>
+        </div>
+      </section>
+
+      <section class="detail-panel" id="detail-panel"></section>
+      <section id="selector-area"></section>
+    </main>
+
+    <script type="module" src="/src/preview/preview.js"></script>
+  </body>
+</html>
