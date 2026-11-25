@@ -27,7 +27,8 @@ export class VoltaicArcAbility extends BaseAbility {
     const { player, enemies, particles, audio, globalDmgMul, reachMul, synergies, callbacks } = ctx;
     const tempestEcho = Boolean(synergies?.has('tempest_echo'));
     const rMul = (st?.reachMul || 1) * reachMul * (fx?.reachMul || 1) * (tempestEcho ? 1.25 : 1);
-    const first = enemies.findNearestTarget(player.x, player.y, 300 * rMul);
+    const acquireReach = Math.min(540, 300 * rMul);
+    const first = enemies.findNearestTarget(player.x, player.y, acquireReach);
     if (!first) {
       this.timer = 0.12;
       return;
@@ -103,7 +104,7 @@ export class VoltaicArcAbility extends BaseAbility {
     }
 
     if (fx?.forkPct > 0) {
-      const alt = enemies.findNearestTarget(player.x, player.y, 300 * rMul, new Set([first.enemy]));
+      const alt = enemies.findNearestTarget(player.x, player.y, acquireReach, new Set([first.enemy]));
       if (alt) {
         runChain(alt.enemy, +(baseDmg * fx.forkPct).toFixed(3), Math.max(2, maxTargets - 1));
       }
@@ -113,7 +114,7 @@ export class VoltaicArcAbility extends BaseAbility {
       const echoAlt = enemies.findNearestTarget(
         player.x,
         player.y,
-        320 * rMul,
+        Math.min(560, 320 * rMul),
         new Set([first.enemy])
       );
       const echoStart = echoAlt?.enemy || first.enemy;
@@ -124,7 +125,7 @@ export class VoltaicArcAbility extends BaseAbility {
 
     if (ctx.shouldMirrorCast?.()) {
       const mirrorStart =
-        enemies.findNearestTarget(player.x, player.y, 300 * rMul, new Set([first.enemy]))?.enemy ||
+        enemies.findNearestTarget(player.x, player.y, acquireReach, new Set([first.enemy]))?.enemy ||
         first.enemy;
       if (mirrorStart && !mirrorStart._removed) {
         runChain(mirrorStart, +(baseDmg * 0.65).toFixed(3), maxTargets);

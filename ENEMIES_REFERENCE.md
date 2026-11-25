@@ -190,6 +190,7 @@ A phase advances whenever `survivalTime >= minTime` **OR** (`score >= minScore` 
 - **Interval Elites (`nextEliteTime`):**
   - First Elite arrives at **`30s`** (alternating **Harbinger** → **Dreadnought** → **Harbinger**…).
   - Next Elite interval: **`max(26s, 35 - overdriveTier * 2)`**. If another Elite or Eclipse Core is already alive, retries every `10s`.
+  - **Twin Elite Convergence (`OD+10+`):** At Overdrive Tier `10` and above, each Elite wave spawns **both** an **Astral Harbinger** and an **Umbral Dreadnought** simultaneously.
 - **Eclipse Lancer Volleys (`nextVolleyTime`):**
   - Starts at **`52s`** (Phase 3+); spawns **`2` Lancers** (Phase 3–4) or **`3` Lancers** (Phase 5).
   - Next volley interval: **`max(14s, 26 - phase.id * 2 - overdriveTier)`**.

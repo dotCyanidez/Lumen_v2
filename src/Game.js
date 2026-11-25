@@ -2029,24 +2029,34 @@ export class LumenGame {
         this.nextEliteTime = this.survivalTime + 10;
       } else {
         this.nextEliteTime += WaveDirectorService.getNextEliteInterval(this.overdriveTier);
-        const kind = this.eliteWaveCount % 2 === 0 ? 'harbinger' : 'behemoth';
         const eliteHpMul = (curPhase.hpMul || 1) * (1 + this.eliteWaveCount * 0.35);
+        const eliteSpeed = Math.min(1.65, curPhase.speedScale + this.overdriveTier * 0.05);
+        const isTwinElite = this.overdriveTier >= 10;
+        const kinds = isTwinElite
+          ? ['harbinger', 'behemoth']
+          : [this.eliteWaveCount % 2 === 0 ? 'harbinger' : 'behemoth'];
         this.eliteWaveCount++;
-        const elite = this.enemies.spawnElite(
-          kind,
-          this.worldWidth,
-          this.worldHeight,
-          Math.min(1.65, curPhase.speedScale + this.overdriveTier * 0.05),
-          this.player,
-          this.width,
-          this.height,
-          { hpBonus: curPhase.hpBonus || 0, hpMul: eliteHpMul }
-        );
-        if (elite) {
+        let firstElite = null;
+        for (const kind of kinds) {
+          const spawned = this.enemies.spawnElite(
+            kind,
+            this.worldWidth,
+            this.worldHeight,
+            eliteSpeed,
+            this.player,
+            this.width,
+            this.height,
+            { hpBonus: curPhase.hpBonus || 0, hpMul: eliteHpMul }
+          );
+          if (spawned && !firstElite) firstElite = spawned;
+        }
+        if (firstElite) {
           this.audio.playPhaseShift();
           this.ui.showPhaseBanner({
-            name: elite.label,
-            subtitle: 'ELITE THREAT · DEFEAT FOR A BONUS CARD',
+            name: isTwinElite ? 'TWIN ELITE CONVERGENCE' : firstElite.label,
+            subtitle: isTwinElite
+              ? `OVERDRIVE +${this.overdriveTier} · HARBINGER & DREADNOUGHT`
+              : 'ELITE THREAT · DEFEAT FOR A BONUS CARD',
           });
         }
       }

@@ -113,7 +113,7 @@ A complete reference of every ability, in-run upgrade card, ascension, synergy, 
 ### 3. Voltaic Arc (`voltaic_chain`)
 - **Tag:** `DAMAGE · LIGHTNING`
 - **Base Description:** Strikes nearby shadows with Chain Lightning arcing across 2 targets.
-- **Base Stats:** `1.45s` interval · `300px` initial acquire reach · `225px` bounce jump reach · `2` targets · `10` base damage.
+- **Base Stats:** `1.45s` interval · `300px` initial acquire reach *(capped at `540px` after reach multipliers; `560px` for Tempest Echo)* · `225px` bounce jump reach · `2` targets · `10` base damage.
 - **Ascension (`Ion Anchor`):**
   - **LV 5:** Final chain hit erupts in a `72px` static shockwave (`42%` dmg).
   - **LV 10 (Supernova):** Amplified to `96px` shockwave (`62%` dmg).
