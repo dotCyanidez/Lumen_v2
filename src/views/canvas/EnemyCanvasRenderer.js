@@ -707,7 +707,7 @@ export class EnemyCanvasRenderer {
       view.root.scale.set(pop);
     }
 
-    if (enemy.kind !== 'core' && enemy.maxHp > 10 && enemy.hp > 0) {
+    if (!enemy.invulnerable && enemy.kind !== 'core' && enemy.maxHp > 10 && enemy.hp > 0) {
       this.drawHpPips(enemy, time);
     }
   }

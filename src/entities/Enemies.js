@@ -477,7 +477,7 @@ export class EnemyManager {
     let bestDistSq = maxRadius * maxRadius;
     for (let i = 0; i < this.enemies.length; i++) {
       const e = this.enemies[i];
-      if (e.age < e.spawnDelay) continue;
+      if (e.age < e.spawnDelay || e.invulnerable) continue;
       if (excludeSet && excludeSet.has(e)) continue;
       const dx = e.x - cx;
       const dy = e.y - cy;
@@ -499,7 +499,7 @@ export class EnemyManager {
 
   damageEnemyAt(index, amount = 10, knockX = 0, knockY = 0, callbacks = {}) {
     const e = this.enemies[index];
-    if (!e || e._removed || e.age < e.spawnDelay) return null;
+    if (!e || e._removed || e.invulnerable || e.age < e.spawnDelay) return null;
     this._ensureCombatStats(e);
 
     const isDot = Boolean(callbacks.isDot);
@@ -566,7 +566,7 @@ export class EnemyManager {
     const rSq = radius * radius;
     for (let i = 0; i < this.enemies.length; i++) {
       const e = this.enemies[i];
-      if (e.age < e.spawnDelay) continue;
+      if (e.age < e.spawnDelay || e.invulnerable) continue;
       const dx = e.x - cx;
       const dy = e.y - cy;
       if (dx * dx + dy * dy <= rSq + e.radius * e.radius * 0.5) {

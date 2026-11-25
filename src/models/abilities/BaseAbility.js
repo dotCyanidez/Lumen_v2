@@ -40,7 +40,7 @@ export class BaseAbility {
     const list = enemies?.enemies || [];
     for (let i = 0; i < list.length; i++) {
       const e = list[i];
-      if (!e || e._removed || e.age < e.spawnDelay) continue;
+      if (!e || e._removed || e.invulnerable || e.age < e.spawnDelay) continue;
       const dx = e.x - cx;
       const dy = e.y - cy;
       const dSq = dx * dx + dy * dy;

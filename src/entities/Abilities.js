@@ -454,7 +454,7 @@ export class AbilityManager {
       const projEnemySnap = enemies.enemies.slice();
       for (let j = 0; j < projEnemySnap.length; j++) {
         const e = projEnemySnap[j];
-        if (!e || e._removed || e.age < e.spawnDelay || p.hitRefs.has(e)) continue;
+        if (!e || e._removed || e.invulnerable || e.age < e.spawnDelay || p.hitRefs.has(e)) continue;
         const hitR = e.radius + 9;
         const dSeg = distToSegment(e.x, e.y, p.prevX, p.prevY, p.x, p.y);
         if (dSeg <= hitR) {

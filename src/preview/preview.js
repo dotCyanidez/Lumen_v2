@@ -25,7 +25,7 @@ import { EnemyManager } from '../entities/Enemies.js';
 const ENEMY_CATALOG = [
   { kind: 'stalker', name: 'Stalker', role: 'Chaser + Predator Lunge', phase: 'Phase 1', radius: 14 },
   { kind: 'manta', name: 'Manta', role: 'Sinusoidal Winged Chaser', phase: 'Phase 2', radius: 17 },
-  { kind: 'lancer', name: 'Lancer', role: 'Telegraphed Railgun Dasher', phase: 'Phase 2', radius: 12 },
+  { kind: 'lancer', name: 'Lancer', role: 'Invulnerable Railgun Hazard (Untargetable)', phase: 'Phase 2', radius: 12 },
   { kind: 'sentinel', name: 'Sentinel', role: 'Roaming Pulse Turret', phase: 'Phase 2', radius: 20 },
   { kind: 'spitter', name: 'Spitter', role: 'Ranged Kiter (18 proj dmg)', phase: 'Phase 3', radius: 14 },
   { kind: 'artillery', name: 'Artillery', role: 'Spread Kiter (20 proj dmg)', phase: 'Phase 3', radius: 17 },
@@ -281,7 +281,7 @@ function renderEnemiesUI() {
     </div>
     <p style="margin:0;color:var(--muted);font-size:0.86rem">${meta.role}</p>
     <div class="stats-row">
-      <div class="stat-pill">Base HP: <b>${meta.kind === 'core' ? '180–3,040+ (Scaled Petals)' : st.hp + ' HP'}</b></div>
+      <div class="stat-pill">Base HP: <b>${meta.kind === 'core' ? '180–3,040+ (Scaled Petals)' : meta.kind === 'lancer' ? 'INVULNERABLE' : st.hp + ' HP'}</b></div>
       <div class="stat-pill">Contact DMG: <b>${st.damage || 22}</b></div>
       ${st.projectileDamage ? `<div class="stat-pill">Projectile DMG: <b>${st.projectileDamage}</b></div>` : ''}
       <div class="stat-pill">Base EXP: <b>${st.exp || 10}</b></div>

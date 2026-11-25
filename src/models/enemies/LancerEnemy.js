@@ -28,6 +28,7 @@ export class LancerEnemy extends BaseEnemy {
       hpBonus,
       hpMul,
     });
+    this.invulnerable = true;
     this.startX = x;
     this.startY = y;
     this.targetX = x + Math.cos(angle) * endDist;
@@ -39,9 +40,13 @@ export class LancerEnemy extends BaseEnemy {
     this._expired = false;
   }
 
-  takeDamage(amount = 10, opts = {}) {
-    return super.takeDamage(amount, { ...opts, knockX: 0, knockY: 0 });
+  takeDamage() {
+    return null;
   }
+
+  applySlow() {}
+  applyMark() {}
+  applyBurn() {}
 
   updateAI(
     dt,

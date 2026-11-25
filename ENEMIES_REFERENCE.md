@@ -30,7 +30,7 @@ A complete reference of every enemy type, boss/elite encounter, enemy attack/abi
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | **Stalker** | `stalker` | Chaser + Lunge | 10 HP | 10 | 22 | — | 14px | Phase 1 |
 | **Manta** | `manta` | Sinusoidal Chaser | 10 HP | 12 | 20 | — | 17px | Phase 2 |
-| **Lancer** | `lancer` | Railgun Dasher | 10 HP | 15 | 28 | — | 12px | Phase 2 |
+| **Lancer** | `lancer` | Invulnerable Railgun Hazard | Invulnerable | — | 28 | — | 12px | Phase 2 |
 | **Sentinel** | `sentinel` | Roaming Pulse Turret | 20 HP | 20 | 24 | — | 20px | Phase 2 |
 | **Spitter** | `spitter` | Ranged Kiter | 20 HP | 22 | 18 | 18 | 14px | Phase 3 |
 | **Artillery** | `artillery` | Spread Kiter | 30 HP | 32 | 22 | 20 | 17px | Phase 3 |
