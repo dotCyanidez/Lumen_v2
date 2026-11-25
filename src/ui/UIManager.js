@@ -438,7 +438,7 @@ export class UIManager {
     });
     document
       .getElementById('btn-pause-title')
-      .addEventListener('click', click(this.callbacks.onReturnTitle));
+      .addEventListener('click', click(this.callbacks.onEndRun || this.callbacks.onReturnTitle));
 
     document.getElementById('btn-restart').addEventListener('click', click(this.callbacks.onRestart));
     document

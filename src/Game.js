@@ -106,6 +106,7 @@ export class LumenGame {
       onStart: () => this.startNewRun(),
       onResume: () => this.resumeGame(),
       onRestart: () => this.startNewRun(),
+      onEndRun: () => this.endRunFromPause(),
       onReturnTitle: () => this.returnToTitle(),
       onPauseToggle: () => this.togglePause(),
       onSfxVolume: (vol) => this.setSfxVolume(vol),
@@ -1855,6 +1856,12 @@ export class LumenGame {
       this.audio.playHit();
       this._callout(this.player.x, this.player.y - 24, `-${dmg} HP`, '#ff6d94', 1.1);
     }
+  }
+
+  endRunFromPause() {
+    if (this.state !== GAME_STATES.PAUSED && this.state !== GAME_STATES.PLAYING) return;
+    this.player.health = 0;
+    this._finishGameOver();
   }
 
   _finishGameOver() {

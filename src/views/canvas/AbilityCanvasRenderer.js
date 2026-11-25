@@ -228,14 +228,44 @@ export class AbilityCanvasRenderer {
 
       for (let i = 0; i < orbitRays.length; i++) {
         const r = orbitRays[i];
+        const dx = r.bx - r.ax;
+        const dy = r.by - r.ay;
+        const len = Math.hypot(dx, dy);
+        if (len < 2) continue;
+        const nx = -dy / len;
+        const ny = dx / len;
+        const fade = clamp(r.alpha ?? 1, 0, 1);
+        const col = r.tint || tint;
+        const outerBaseW = 6.2 * fade;
+        const coreBaseW = 2.3 * fade;
+
+        // Soft emitter flare anchored at the blade crystal
         this.fxGraphics
-          .moveTo(r.ax, r.ay)
-          .lineTo(r.bx, r.by)
-          .stroke({ width: 5.5, color: r.tint || tint, alpha: 0.34 });
+          .circle(r.ax, r.ay, 7.5 * fade)
+          .fill({ color: col, alpha: 0.28 * fade })
+          .circle(r.ax, r.ay, 3.2 * fade)
+          .fill({ color: 0xffffff, alpha: 0.78 * fade });
+
+        // Tapered outer plasma lance (wide at emitter -> razor tip)
         this.fxGraphics
-          .moveTo(r.ax, r.ay)
+          .moveTo(r.ax + nx * outerBaseW, r.ay + ny * outerBaseW)
           .lineTo(r.bx, r.by)
-          .stroke({ width: 1.8, color: 0xffffff, alpha: 0.92 });
+          .lineTo(r.ax - nx * outerBaseW, r.ay - ny * outerBaseW)
+          .closePath()
+          .fill({ color: col, alpha: 0.34 * fade });
+
+        // Tapered inner starlight core needle
+        this.fxGraphics
+          .moveTo(r.ax + nx * coreBaseW, r.ay + ny * coreBaseW)
+          .lineTo(r.bx, r.by)
+          .lineTo(r.ax - nx * coreBaseW, r.ay - ny * coreBaseW)
+          .closePath()
+          .fill({ color: 0xffffff, alpha: 0.92 * fade });
+
+        // Tip glint
+        this.fxGraphics
+          .circle(r.bx, r.by, 2.2 * fade)
+          .fill({ color: 0xffffff, alpha: 0.65 * fade });
       }
     }
 

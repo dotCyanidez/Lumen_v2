@@ -26,6 +26,9 @@ export class OrbitingBladesAbility extends BaseAbility {
     this.orbitalPulseTimer = 1.1;
     this.surgeTimer = 0;
     this.surgeActive = 0;
+    this.rayCycleTimer = 1.8;
+    this.rayActive = 0;
+    this.rayDuration = 0.75;
     this.orbitAngle = 0;
     this.radiantHitCount = 0;
   }
@@ -35,6 +38,8 @@ export class OrbitingBladesAbility extends BaseAbility {
     this.orbitalPulseTimer = 1.1;
     this.surgeTimer = 0;
     this.surgeActive = 0;
+    this.rayCycleTimer = 1.8;
+    this.rayActive = 0;
     this.orbitAngle = 0;
     this.radiantHitCount = 0;
   }
@@ -76,6 +81,26 @@ export class OrbitingBladesAbility extends BaseAbility {
     }
 
     const isSurging = this.surgeActive > 0;
+    const baseRayLen = fx?.rayLen || 0;
+    if (baseRayLen > 0) {
+      if (isSurging) {
+        this.rayActive = Math.max(this.rayActive, 0.35);
+      } else if (this.rayActive > 0) {
+        this.rayActive = Math.max(0, this.rayActive - dt);
+      } else {
+        this.rayCycleTimer -= dt * hasteMul;
+        if (this.rayCycleTimer <= 0) {
+          this.rayCycleTimer = 3.85;
+          this.rayActive = this.rayDuration;
+        }
+      }
+    } else {
+      this.rayActive = 0;
+    }
+    const rayProgress = this.rayActive > 0 ? 1 - this.rayActive / this.rayDuration : 0;
+    const rayExtend = this.rayActive > 0 ? Math.min(1, rayProgress / 0.16) : 0;
+    const rayAlpha = this.rayActive > 0 ? Math.min(1, this.rayActive / 0.22) : 0;
+    const activeRayLen = this.rayActive > 0 ? baseRayLen * rayExtend : 0;
     const count = 2 + (st?.countAdd || 0);
     ctx.ensureOrbitalCapacity?.(count);
 
@@ -129,11 +154,18 @@ export class OrbitingBladesAbility extends BaseAbility {
       slot.tint = bladeTint;
       slot.scale = bladeScale;
 
-      const rayLen = fx?.rayLen || 0;
+      const rayLen = activeRayLen;
       const rx = rayLen > 0 ? ox + cosA * rayLen : ox;
       const ry = rayLen > 0 ? oy + sinA * rayLen : oy;
       if (rayLen > 0) {
-        orbitRays.push({ ax: ox, ay: oy, bx: rx, by: ry, tint: isSurging ? COLORS.lumenGold : primaryTint });
+        orbitRays.push({
+          ax: ox,
+          ay: oy,
+          bx: rx,
+          by: ry,
+          alpha: rayAlpha,
+          tint: isSurging ? COLORS.lumenGold : primaryTint,
+        });
       }
 
       for (let j = 0; j < orbEnemySnap.length; j++) {
@@ -175,7 +207,7 @@ export class OrbitingBladesAbility extends BaseAbility {
           distToSegment(e.x, e.y, ox, oy, rx, ry) <= e.radius + 8
         ) {
           e.rayHitCooldown = Math.max(0.22, hitCooldown * 1.1);
-          const rayDmg = hitDamage(e, +(baseDmg * fx.rayPct).toFixed(3));
+          const rayDmg = hitDamage(e, +(baseDmg * fx.rayPct * 1.35).toFixed(3));
           const res = enemies.damageEnemyByRef(e, rayDmg, cosA * 55, sinA * 55, orbCb);
           if (res) {
             particles?.emitMotePickup(e.x, e.y, isSurging ? COLORS.lumenGold : primaryTint);
