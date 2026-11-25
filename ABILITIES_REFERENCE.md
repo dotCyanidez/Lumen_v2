@@ -87,7 +87,7 @@ A complete reference of every ability, in-run upgrade card, ascension, synergy, 
 ### 2. Orbiting Blades (`solar_orbitals`)
 - **Tag:** `DAMAGE · ORBITAL`
 - **Base Description:** Summons 2 crystalline blades orbiting Lumen to slice nearby shadows.
-- **Base Stats:** `2` blades · `74px` orbit radius · `2.95 rad/s` spin · `0.40s` per-target hit cooldown · `10` base damage.
+- **Base Stats:** `2` blades · `96px` orbit radius *(sizeMul capped at `2.0×`)* · `2.95 rad/s` spin · `0.40s` per-target hit cooldown · `10` base damage.
 - **Ascension (`Harmonic Halo`):**
   - **LV 5+:** Orbit ring periodically scorches nearby shadows (`LV 10+` amplifies it).
 
