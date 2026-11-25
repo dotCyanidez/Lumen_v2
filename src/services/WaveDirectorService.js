@@ -34,15 +34,22 @@ export class WaveDirectorService {
     return 0;
   }
 
+  static getOverdriveHpMul(overdriveTier = 0) {
+    const od = Math.max(0, overdriveTier);
+    return od > 4 ? +Math.pow(1.18, od - 4).toFixed(3) : 1;
+  }
+
   static getOverdriveDamageMul(overdriveTier = 0) {
     const od = Math.max(0, overdriveTier);
-    return +(1 + od * 0.14 + Math.max(0, od - 8) * 0.08).toFixed(3);
+    const lateExp = od > 12 ? Math.pow(1.08, od - 12) - 1 : 0;
+    return +(1 + od * 0.14 + Math.max(0, od - 6) * 0.1 + lateExp).toFixed(3);
   }
 
   static buildEffectivePhase(phase, overdriveTier = 0, difficulty = null, dailyTwist = null) {
     const baseHpBonus = WaveDirectorService.getBaseHpBonusForPhase(phase);
     const od = Math.max(0, overdriveTier);
     const lateHpCurve = od > 5 ? Math.floor(Math.pow(od - 5, 1.35)) : 0;
+    const odHpMul = WaveDirectorService.getOverdriveHpMul(od);
     return {
       ...phase,
       maxEnemies: Math.min(36, phase.maxEnemies + od * 3),
@@ -57,7 +64,7 @@ export class WaveDirectorService {
           (dailyTwist?.enemySpeedMul || 1)
       ),
       hpBonus: baseHpBonus + od + lateHpCurve,
-      hpMul: difficulty?.hpMul || 1,
+      hpMul: +((difficulty?.hpMul || 1) * odHpMul).toFixed(3),
       overdriveDmgMul: WaveDirectorService.getOverdriveDamageMul(od),
     };
   }
@@ -68,8 +75,10 @@ export class WaveDirectorService {
   }
 
   static getCorePetalHp(phaseId = 3, overdriveTier = 0, hpMul = 1) {
-    const basePetal = (phaseId >= 5 ? 90 : 60) + Math.max(0, overdriveTier) * 25;
-    return Math.max(10, Math.round(basePetal * (hpMul || 1)));
+    const od = Math.max(0, overdriveTier);
+    const basePetal = (phaseId >= 5 ? 90 : 60) + od * 25;
+    const odHpMul = WaveDirectorService.getOverdriveHpMul(od);
+    return Math.max(10, Math.round(basePetal * (hpMul || 1) * odHpMul));
   }
 
   static getNextVolleyInterval(phaseId, overdriveTier = 0) {

@@ -55,10 +55,16 @@ export class VoltaicArcAbility extends BaseAbility {
         const ty = current.y;
         particles?.emitChainLightning(fromX, fromY, tx, ty);
         const res = enemies.damageEnemyByRef(current, stepDmg, 0, 0, arcCb);
-        if (res && !res.killed && fx?.stunSec > 0) {
+        if (
+          res &&
+          !res.killed &&
+          fx?.stunSec > 0 &&
+          (current.age || 0) >= (current._nextVoltaicStunAge || 0)
+        ) {
           current.slowTimer = Math.max(current.slowTimer || 0, fx.stunSec);
-          current.vx *= 0.2;
-          current.vy *= 0.2;
+          current.vx *= 0.65;
+          current.vy *= 0.65;
+          current._nextVoltaicStunAge = (current.age || 0) + 1.5;
         }
         if (res?.killed && fx?.killDashRestore > 0) {
           callbacks?.onDashCdrSeconds?.(fx.killDashRestore);

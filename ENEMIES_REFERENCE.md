@@ -143,7 +143,7 @@ A complete reference of every enemy type, boss/elite encounter, enemy attack/abi
 ### 11. Eclipse Core (`core`) — *Phase & Overdrive Boss*
 - **Base Stats:** `3 + extraShields` petals × scaled `petalHp` · `65+` EXP · `32` contact dmg · **`32` ring dmg** · `26px` radius · `74 × min(1.3, speedScale)` px/s · `1.0s` warmup · `40s` lifetime.
 - **Shield Mechanics:**
-  - Uses **scaled petal shields** (`petalHp = max(10, round(((phase >= 5 ? 90 : 60) + overdriveTier * 25) * difficulty.hpMul))`) instead of regular HP; each hit subtracts `effAmount` from `shields` and cracks off petals (`220 × combo` score + `+1` Combo per crack).
+  - Uses **scaled petal shields** (`petalHp = max(10, round(((phase >= 5 ? 90 : 60) + overdriveTier * 25) * difficulty.hpMul * getOverdriveHpMul(overdriveTier)))`) instead of regular HP; each hit subtracts `effAmount` from `shields` and cracks off petals (`220 × combo` score + `+1` Combo per crack).
   - **Total Shield HP by Spawn Trigger** *(Normal / Hard `1.45×` / Nightmare `2.0×`)*:
     - **Phase 3:** `3 / 4 / 5` petals → **`180` (`3×60`) / `348` (`4×87`) / `600` (`5×120`) Shield HP**.
     - **Phase 5:** `5 / 6 / 7` petals → **`450` (`5×90`) / `786` (`6×131`) / `1,260` (`7×180`) Shield HP**.
@@ -205,9 +205,12 @@ $$
 \text{overdriveTier} = \max\Big(0,\;\Big\lfloor \max\Big(\frac{\text{survivalTime} - 108}{26},\; \min\Big(\frac{\text{score} - 13750}{4500},\; \frac{\text{survivalTime} - 108}{26} + 1\Big)\Big) \Big\rfloor\Big)
 $$
 - Every Overdrive tier cycles through the 4 Wave Banners (`PRISM DRIFT`, `VIOLET GALE`, `LANCER CHORUS`, `SOLAR ECLIPSE`) and drops a `30` LUM Shard.
+- **Overdrive Enemy HP Multiplier (`WaveDirectorService.getOverdriveHpMul`):**
+  $$\text{overdriveHpMul} = \begin{cases} 1 & \text{if } \text{od} \le 4 \\ 1.18^{(\text{od} - 4)} & \text{if } \text{od} > 4 \end{cases}$$
+  *(Multiplies `hpMul` for normal enemies, Elites, and Eclipse Core `petalHp`: `1.0×` through `OD+4`, `2.70×` at `OD+10`, `14.1×` at `OD+20`, `74×` at `OD+30` — keeps all player abilities uncapped while preventing infinite 30–50 min AFK runs.)*
 - **Overdrive Enemy Damage Multiplier (`WaveDirectorService.getOverdriveDamageMul`):**
-  $$\text{overdriveDmgMul} = 1 + 0.14 \cdot \text{overdriveTier} + 0.08 \cdot \max(0, \text{overdriveTier} - 8)$$
-  *(Applied to all incoming contact, projectile, and shockwave damage in `Game.js`: `1.00×` in Ph 1–5, `1.70×` at `OD+5`, `2.56×` at `OD+10`, `4.76×` at `OD+20`.)*
+  $$\text{overdriveDmgMul} = 1 + 0.14 \cdot \text{od} + 0.10 \cdot \max(0, \text{od} - 6) + \max\big(0,\; 1.08^{\max(0, \text{od} - 12)} - 1\big)$$
+  *(Applied to all incoming contact, projectile, and shockwave damage in `Game.js`: `1.00×` in Ph 1–5, `1.70×` at `OD+5`, `2.80×` at `OD+10`, `6.05×` at `OD+20`, `10.6×` at `OD+30`.)*
 
 ### 2. Enemy HP Scaling (`BaseEnemy.computeScaledHp`)
 First, additive `hpBonus` is calculated (with super-linear scaling past `OD+5`):

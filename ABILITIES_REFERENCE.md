@@ -133,7 +133,7 @@ A complete reference of every ability, in-run upgrade card, ascension, synergy, 
 | **Relay Conduit** (`vc_relay`) | Left Mid | Overcharged Coil | 4 | 1140 / 1740 / 2460 / 3300 | `+1 / +1 / +2 / +2` chain bounce(s) & `+8% / +16% / +24% / +32%` reach |
 | **Twin-Arc Fork** (`vc_fork`) | Left Cap | Relay Conduit | 4 | 1650 / 2400 / 3450 / 4650 | Discharges a simultaneous 2nd forked lightning chain at `45% / 60% / 75% / 95%` dmg |
 | **Feedback Capacitor** (`vc_capacitor`) | Right Mid | Overcharged Coil | 4 | 1140 / 1740 / 2460 / 3300 | Surges `+18% / +28% / +38% / +50%` burst dmg into final target per unused bounce |
-| **Paralyzing Surge** (`vc_stun`) | Right Cap | Feedback Capacitor | 4 | 1650 / 2400 / 3450 / 4650 | `0.4s / 0.6s / 0.8s / 1.0s` jolt slow & restores `0.12s / 0.2s / 0.28s / 0.38s` Dash on Arc kills |
+| **Paralyzing Surge** (`vc_stun`) | Right Cap | Feedback Capacitor | 4 | 1650 / 2400 / 3450 / 4650 | `0.4s / 0.6s / 0.8s / 1.0s` jolt slow (`0.65×` velocity cut, `1.5s` per-enemy stun immunity) & restores `0.12s / 0.2s / 0.28s / 0.38s` Dash on Arc kills |
 
 ---
 
