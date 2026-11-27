@@ -1585,7 +1585,7 @@ body {
 .title-quests {
   margin-top: clamp(1rem, 3.2vh, 2rem);
   margin-bottom: clamp(1rem, 3.6vh, 2.4rem);
-  width: min(100%, 44rem);
+  width: min(100%, 48rem);
 }
 
 .title-quests-header {
@@ -1665,19 +1665,17 @@ body {
 .quest-pill-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
+  align-items: flex-start;
+  gap: 0.45rem;
 }
 
 .quest-pill-name {
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  line-height: 1.25;
+  letter-spacing: 0.08em;
   color: #ccfefa;
   text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .quest-pill.done .quest-pill-name {
