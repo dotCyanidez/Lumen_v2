@@ -21,6 +21,11 @@ import { PlayerCanvasRenderer } from '../views/canvas/PlayerCanvasRenderer.js';
 import { AbilityManager } from '../entities/Abilities.js';
 import { ParticleSystem } from '../vfx/ParticleSystem.js';
 import { EnemyManager } from '../entities/Enemies.js';
+import {
+  ABILITY_CARD_EMBLEMS,
+  ABILITY_ICONS,
+  TAROT_ASTROLABE_SVG,
+} from '../views/dom/DomIcons.js';
 
 const ENEMY_CATALOG = [
   { kind: 'stalker', name: 'Stalker', role: 'Chaser + Predator Lunge', phase: 'Phase 1', radius: 14 },
@@ -100,6 +105,9 @@ const state = {
   selectedAbility: 'resonant_volley',
   abilityRank: 5,
   abilityMaxTalents: false,
+  // Cards tab
+  cardsSubMode: 'draft', // 'draft' | 'compare'
+  cardsRarity: 'epic',
   // Pickups tab
   selectedPickup: 'mote',
 };
@@ -632,9 +640,75 @@ function renderPickupsUI() {
 }
 
 // ============================================================================
+// TAB 5: CARD DRAFT & SPELL EMBLEMS
+// ============================================================================
+function renderCardsTab() {
+  clearScene();
+  stageEl.style.display = 'none';
+  titleEl.textContent =
+    state.cardsSubMode === 'draft'
+      ? 'Celestial Tarot Card Draft Preview'
+      : 'Old vs. New Spell Emblems (All 11)';
+
+  controlsEl.innerHTML = `
+    <button class="ctrl-btn ${state.cardsSubMode === 'draft' ? 'active' : ''}" id="btn-pv-draft">3-Card Draft</button>
+    <button class="ctrl-btn ${state.cardsSubMode === 'compare' ? 'active' : ''}" id="btn-pv-compare">Old vs. New Emblems (11)</button>
+  `;
+  controlsEl.querySelector('#btn-pv-draft')?.addEventListener('click', () => {
+    state.cardsSubMode = 'draft';
+    renderCardsTab();
+  });
+  controlsEl.querySelector('#btn-pv-compare')?.addEventListener('click', () => {
+    state.cardsSubMode = 'compare';
+    renderCardsTab();
+  });
+
+  if (state.cardsSubMode === 'draft') {
+    const sample = [
+      { id: 'voltaic_chain', name: 'Voltaic Arc', rarity: 'epic', badge: 'EPIC', rank: 'LV 2', title: '+3 Targets', desc: 'Voltaic Arc chains to +3 more shadows per strike.', footer: 'Pairs with Starbloom Spores → Storm Pollen' },
+      { id: 'seeker_barrage', name: 'Seeker Needles', rarity: 'rare', badge: 'NEW', rank: 'LV 1', title: 'Seeker Needles', desc: 'Launches 2 curved homing starlight needles toward distant shadows.', footer: 'Pairs with Starlight Bolt → Comet Volley' },
+      { id: 'solar_orbitals', name: 'Orbiting Blades', rarity: 'uncommon', badge: 'UNCOMMON', rank: 'LV 3', title: '+14% Reach', desc: 'Wider crystalline blade orbit radius & cleave reach.', footer: 'Pairs with Celestial Spear → Halo Lance' },
+    ];
+    detailEl.innerHTML = `<div class="pv-tarot-grid">${sample
+      .map(
+        (c, i) => `
+      <div class="pv-tarot-card pv-tarot-card--${c.rarity}">
+        <div class="pv-medallion">${TAROT_ASTROLABE_SVG}${ABILITY_CARD_EMBLEMS[c.id]}</div>
+        <div class="pv-pills"><span class="pv-pill">${c.badge}</span><span class="pv-pill">${c.rank}</span><span class="pv-pill">${i + 1}</span></div>
+        <div class="pv-eyebrow">✦ ${c.name}</div>
+        <div class="pv-title">${c.title}</div>
+        <div class="pv-desc">${c.desc}</div>
+        <div class="pv-footer">${c.footer}</div>
+      </div>`
+      )
+      .join('')}</div>`;
+    selectorEl.innerHTML = '';
+  } else {
+    detailEl.innerHTML = `<div class="pv-compare-grid">${BLESSINGS.map(
+      (b) => `
+      <div class="item-card" style="cursor:default">
+        <h3 style="justify-content:center">${b.name}</h3>
+        <div class="pv-compare-pair">
+          <div class="pv-compare-slot">
+            <div class="pv-medallion">${TAROT_ASTROLABE_SVG}<span class="pv-old-svg">${ABILITY_ICONS[b.id] || ''}</span></div>
+            <small>Old Icon</small>
+          </div>
+          <div class="pv-compare-slot is-new">
+            <div class="pv-medallion">${TAROT_ASTROLABE_SVG}${ABILITY_CARD_EMBLEMS[b.id] || ''}</div>
+            <small style="color:var(--gold)">New Emblem</small>
+          </div>
+        </div>
+      </div>`
+    ).join('')}</div>`;
+    selectorEl.innerHTML = '';
+  }
+}
+
+// ============================================================================
 // MAIN LOOP & TAB ROUTER
 // ============================================================================
 function refreshTab() {
+  stageEl.style.display = state.tab === 'cards' ? 'none' : 'block';
   document.querySelectorAll('#preview-tabs .tab-btn').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.tab === state.tab);
   });
@@ -647,6 +721,8 @@ function refreshTab() {
   } else if (state.tab === 'abilities') {
     setupAbilitiesScene();
     renderAbilitiesUI();
+  } else if (state.tab === 'cards') {
+    renderCardsTab();
   } else if (state.tab === 'pickups') {
     setupPickupsScene();
     renderPickupsUI();

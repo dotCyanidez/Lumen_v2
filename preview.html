@@ -273,6 +273,83 @@
       }
       .talent-box strong { color: var(--gold); display: block; margin-bottom: 2px; }
       .talent-box small { color: var(--muted); display: block; margin-top: 3px; }
+
+      /* Embedded Tarot Card & Emblem Showcase */
+      .pv-tarot-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+      }
+      .pv-tarot-card {
+        --frame: #46d8ff;
+        --frame-soft: rgba(70, 216, 255, 0.48);
+        --glow: rgba(70, 216, 255, 0.34);
+        --bg-top: #06213d;
+        --bg-bot: #040919;
+        --pill-bg: rgba(70, 216, 255, 0.18);
+        --pill-txt: #c4f2ff;
+        --accent: #5fe2ff;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        padding: 20px 18px 16px;
+        min-height: 390px;
+        border-radius: 16px;
+        border: 2px solid var(--frame);
+        background: radial-gradient(circle at 50% 26%, var(--glow) 0%, transparent 56%), linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bot) 100%);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.58), 0 0 22px var(--glow);
+        color: #f4fbff;
+      }
+      .pv-tarot-card::before {
+        content: '';
+        position: absolute;
+        inset: 7px;
+        border-radius: 11px;
+        border: 1px solid var(--frame-soft);
+        pointer-events: none;
+      }
+      .pv-tarot-card--common { --frame: #7ea8c9; --frame-soft: rgba(145,185,218,.38); --glow: rgba(126,168,201,.22); --bg-top: #0b182c; --bg-bot: #050a16; --pill-bg: rgba(145,185,218,.16); --pill-txt: #d5e8f8; --accent: #9cc6e8; }
+      .pv-tarot-card--uncommon { --frame: #52f0c4; --frame-soft: rgba(82,240,196,.44); --glow: rgba(82,240,196,.28); --bg-top: #07262a; --bg-bot: #040d16; --pill-bg: rgba(82,240,196,.16); --pill-txt: #b3ffe8; --accent: #70f7cf; }
+      .pv-tarot-card--epic { --frame: #ffca57; --frame-soft: rgba(255,202,87,.5); --glow: rgba(182,92,255,.42); --bg-top: #26103e; --bg-bot: #0b071b; --pill-bg: rgba(154,78,255,.28); --pill-txt: #f5d8ff; --accent: #ffd97d; }
+      .pv-medallion {
+        position: relative;
+        height: 132px;
+        display: grid;
+        place-items: center;
+        margin-bottom: 10px;
+        color: var(--frame);
+      }
+      .pv-medallion .blessing-astrolabe {
+        position: absolute;
+        width: 124px;
+        height: 124px;
+        opacity: 0.56;
+        animation: pvSpin 24s linear infinite;
+      }
+      .pv-medallion .blessing-emblem-svg,
+      .pv-medallion .pv-old-svg svg {
+        position: relative;
+        z-index: 2;
+        width: 82px;
+        height: 82px;
+        filter: drop-shadow(0 0 12px var(--frame));
+      }
+      @keyframes pvSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      .pv-pills { display: flex; justify-content: center; gap: 6px; margin-bottom: 10px; }
+      .pv-pill { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; padding: 3px 10px; border-radius: 999px; background: var(--pill-bg); border: 1px solid var(--frame-soft); color: var(--pill-txt); }
+      .pv-eyebrow { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; color: var(--accent); text-transform: uppercase; }
+      .pv-title { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 700; margin: 2px 0 6px; color: #fff; }
+      .pv-desc { font-size: 0.9rem; line-height: 1.45; color: rgba(230,244,255,.88); }
+      .pv-footer { margin-top: auto; padding-top: 10px; text-align: center; font-size: 0.8rem; font-weight: 600; color: var(--accent); border-top: 1px solid var(--frame-soft); }
+      .pv-compare-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+      .pv-compare-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+      .pv-compare-slot { display: flex; flex-direction: column; align-items: center; padding: 10px 6px; border-radius: 10px; border: 1px solid rgba(255,255,255,.1); background: rgba(4,10,24,.88); color: #5df7eb; }
+      .pv-compare-slot.is-new { border-color: rgba(255,202,87,.45); color: #ffca57; }
+      .pv-compare-slot .pv-medallion { height: 84px; margin-bottom: 4px; }
+      .pv-compare-slot .blessing-astrolabe { width: 80px; height: 80px; }
+      .pv-compare-slot .blessing-emblem-svg,
+      .pv-compare-slot .pv-old-svg svg { width: 52px; height: 52px; }
+      @media (max-width: 820px) { .pv-tarot-grid { grid-template-columns: 1fr; } }
     </style>
   </head>
   <body>
@@ -285,6 +362,7 @@
         <button class="tab-btn active" data-tab="enemies">Enemies &amp; Bosses (11)</button>
         <button class="tab-btn" data-tab="spirits">Spirits, Palettes &amp; Trails</button>
         <button class="tab-btn" data-tab="abilities">Abilities &amp; Talents (11)</button>
+        <button class="tab-btn" data-tab="cards">Card Draft &amp; Emblems</button>
         <button class="tab-btn" data-tab="pickups">Pickups &amp; FX (5)</button>
       </nav>
       <div class="nav-links">

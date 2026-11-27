@@ -16,10 +16,13 @@ import { SanctuaryViewModel } from '../viewmodels/SanctuaryViewModel.js';
 import { SettingsViewModel } from '../viewmodels/SettingsViewModel.js';
 import { TitleViewModel } from '../viewmodels/TitleViewModel.js';
 import {
+  ABILITY_CARD_EMBLEMS,
   ABILITY_ICONS,
   MODE_LABELS,
   SVG_MIXER,
   SVG_PAUSE,
+  TAROT_ASTROLABE_SVG,
+  TAROT_STAR_SVG,
   hexToCss,
 } from '../views/dom/DomIcons.js';
 import {
@@ -916,17 +919,22 @@ export class UIManager {
       card.className = `blessing-card ${catClass}${rarityClass}`;
       card.dataset.blessingId = blessing.abilityId || blessing.id;
       card.dataset.blessingUid = blessing.uid || blessing.id;
-      const rarityTag =
-        rarity === 'epic'
-          ? 'EPIC · '
+      const rarityBadge = isNew
+        ? 'NEW'
+        : rarity === 'epic'
+          ? 'EPIC'
           : rarity === 'rare'
-            ? 'RARE · '
+            ? 'RARE'
             : rarity === 'uncommon'
-              ? 'UNCOMMON · '
-              : '';
-      const rankLabel = isNew ? 'NEW' : `${rarityTag}LV ${nextRank}`;
+              ? 'UNCOMMON'
+              : 'COMMON';
+      const rankPill = isNew ? 'LV 1' : `LV ${nextRank}`;
       const rankCls = isNew ? '' : `is-${rarity}`;
       const displayTitle = blessing.title || blessing.name || '';
+      const abilityId = blessing.abilityId || blessing.id || 'resonant_volley';
+      const abilityInfo = getAbilityInfo(abilityId);
+      const abilityName = (abilityInfo?.name || blessing.name || blessing.tag || '').toUpperCase();
+      const emblemSvg = ABILITY_CARD_EMBLEMS[abilityId] || ABILITY_CARD_EMBLEMS.resonant_volley;
 
       const hintLines = [];
       if (blessing.ascensionHint) {
@@ -951,20 +959,30 @@ export class UIManager {
           );
         }
       }
-      const hintsHtml =
-        hintLines.length > 0 ? `<div class="blessing-card-hints">${hintLines.join('')}</div>` : '';
+      const footerHtml =
+        hintLines.length > 0
+          ? `<div class="blessing-card-footer"><div class="blessing-star-divider">✦</div><div class="blessing-card-hints">${hintLines.join('')}</div></div>`
+          : '';
 
       card.innerHTML = `
-        <div class="blessing-card-head">
-          <span class="blessing-card-tag">${blessing.tag}</span>
-          <div class="blessing-card-badges">
-            <span class="blessing-card-rank ${rankCls}">${rankLabel}</span>
-            <span class="blessing-card-key">${idx + 1}</span>
-          </div>
+        <span class="blessing-crest">${TAROT_STAR_SVG}</span>
+        <span class="blessing-corner tl">${TAROT_STAR_SVG}</span>
+        <span class="blessing-corner tr">${TAROT_STAR_SVG}</span>
+        <span class="blessing-corner bl">${TAROT_STAR_SVG}</span>
+        <span class="blessing-corner br">${TAROT_STAR_SVG}</span>
+        <div class="blessing-medallion">
+          ${TAROT_ASTROLABE_SVG}
+          ${emblemSvg}
         </div>
+        <div class="blessing-card-pills">
+          <span class="blessing-card-rank ${rankCls}">${rarityBadge}</span>
+          <span class="blessing-card-rank ${rankCls}">${rankPill}</span>
+          <span class="blessing-card-key">${idx + 1}</span>
+        </div>
+        <div class="blessing-card-tag"><span>✦</span> ${abilityName}</div>
         <div class="blessing-card-title">${displayTitle}</div>
         <div class="blessing-card-desc">${blessing.desc}</div>
-        ${hintsHtml}
+        ${footerHtml}
       `;
       card.addEventListener('click', () => {
         if (performance.now() - this.blessingOpenTimestamp < 260) return;

@@ -1640,160 +1640,340 @@ body {
   color: rgba(215, 236, 248, 0.78);
 }
 
-/* Level-Up Ability Card Draft */
+/* Level-Up Ability Card Draft — Celestial Tarot Layout */
+#screen-blessing {
+  background: radial-gradient(circle at 50% 42%, rgba(7, 16, 38, 0.78) 0%, rgba(2, 5, 14, 0.92) 75%);
+  backdrop-filter: blur(8px);
+}
+
 .blessing-panel {
-  width: min(94vw, 66rem);
-  padding: clamp(22px, 2.2vw, 36px) clamp(20px, 2.4vw, 40px);
+  width: min(94vw, 68rem);
+  padding: clamp(12px, 1.5vh, 24px) clamp(12px, 2vw, 28px);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.blessing-panel .panel-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+  letter-spacing: 0.24em;
+  color: var(--cyan);
+  text-shadow: 0 0 18px rgba(93, 247, 235, 0.55);
+}
+
+.blessing-panel .panel-title {
+  font-size: clamp(2rem, 3.4vw, 3.1rem);
+  margin: 0.2rem 0 0.9rem;
+  text-shadow: 0 4px 26px rgba(93, 247, 235, 0.22);
 }
 
 .blessing-cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: clamp(14px, 1.4vw, 24px);
-  margin-top: 0.85rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(16px, 2vw, 32px);
+  margin-top: 1.65rem;
+  align-items: stretch;
 }
 
 .blessing-card {
+  --frame: #5df7eb;
+  --frame-soft: rgba(93, 247, 235, 0.44);
+  --glow: rgba(93, 247, 235, 0.28);
+  --bg-top: #071b33;
+  --bg-bot: #040a1a;
+  --pill-bg: rgba(93, 247, 235, 0.15);
+  --pill-txt: #c4fff9;
+  --accent: #6ef5ff;
+
   position: relative;
   text-align: left;
-  padding: clamp(20px, 1.8vw, 30px) clamp(18px, 1.6vw, 26px);
+  padding: 1.35rem 1.3rem 1.25rem;
   border-radius: 1.15rem;
-  background: linear-gradient(160deg, rgba(16, 34, 68, 0.86), rgba(8, 16, 36, 0.94));
-  border: 1px solid rgba(110, 240, 236, 0.32);
+  border: 2px solid var(--frame);
+  background:
+    radial-gradient(circle at 50% 26%, var(--glow) 0%, transparent 56%),
+    linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bot) 100%);
+  box-shadow:
+    0 16px 42px rgba(0, 0, 0, 0.62),
+    0 0 24px var(--glow),
+    inset 0 0 22px rgba(255, 255, 255, 0.04);
   color: #f4fbff;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
-  min-height: clamp(190px, 22vh, 300px);
-  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  gap: 0.35rem;
+  min-height: clamp(360px, 48vh, 520px);
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease,
+    box-shadow 0.22s ease;
 }
 
-.blessing-card--damage {
-  border-color: rgba(255, 210, 128, 0.34);
+.blessing-card::before {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border-radius: 0.85rem;
+  border: 1px solid var(--frame-soft);
+  pointer-events: none;
 }
 
-.blessing-card--utility {
-  border-color: rgba(110, 240, 236, 0.34);
+.blessing-crest {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  color: var(--frame);
+  filter: drop-shadow(0 0 8px var(--frame));
+  pointer-events: none;
 }
+
+.blessing-crest::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: var(--bg-top);
+  border: 1.5px solid var(--frame);
+  border-radius: 4px;
+  transform: rotate(45deg);
+  z-index: -1;
+}
+
+.blessing-crest svg,
+.blessing-corner svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.blessing-corner {
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  color: var(--frame);
+  opacity: 0.9;
+  filter: drop-shadow(0 0 5px var(--frame));
+  pointer-events: none;
+}
+
+.blessing-corner.tl { top: 10px; left: 10px; }
+.blessing-corner.tr { top: 10px; right: 10px; }
+.blessing-corner.bl { bottom: 10px; left: 10px; }
+.blessing-corner.br { bottom: 10px; right: 10px; }
 
 .blessing-card--common {
-  border-color: rgba(164, 180, 198, 0.34);
+  --frame: #7ea8c9;
+  --frame-soft: rgba(145, 185, 218, 0.38);
+  --glow: rgba(126, 168, 201, 0.22);
+  --bg-top: #0b182c;
+  --bg-bot: #050a16;
+  --pill-bg: rgba(145, 185, 218, 0.16);
+  --pill-txt: #d5e8f8;
+  --accent: #9cc6e8;
 }
 
 .blessing-card--uncommon {
-  border-color: rgba(92, 238, 196, 0.52);
-  box-shadow: 0 0 18px rgba(92, 238, 196, 0.1);
+  --frame: #52f0c4;
+  --frame-soft: rgba(82, 240, 196, 0.44);
+  --glow: rgba(82, 240, 196, 0.28);
+  --bg-top: #07262a;
+  --bg-bot: #040d16;
+  --pill-bg: rgba(82, 240, 196, 0.16);
+  --pill-txt: #b3ffe8;
+  --accent: #70f7cf;
 }
 
 .blessing-card--rare {
-  border-color: rgba(138, 180, 255, 0.68);
-  box-shadow: 0 0 22px rgba(124, 152, 255, 0.18);
+  --frame: #46d8ff;
+  --frame-soft: rgba(70, 216, 255, 0.48);
+  --glow: rgba(70, 216, 255, 0.34);
+  --bg-top: #06213d;
+  --bg-bot: #040919;
+  --pill-bg: rgba(70, 216, 255, 0.18);
+  --pill-txt: #c4f2ff;
+  --accent: #5fe2ff;
 }
 
 .blessing-card--epic {
-  background: linear-gradient(155deg, rgba(48, 28, 66, 0.9), rgba(14, 18, 42, 0.96));
-  border-color: rgba(255, 214, 102, 0.84);
-  box-shadow: 0 0 28px rgba(255, 204, 102, 0.24), inset 0 0 18px rgba(255, 168, 230, 0.08);
-}
-
-.blessing-cards.is-banish-mode .blessing-card:hover,
-.blessing-cards.is-banish-mode .blessing-card:focus-visible {
-  border-color: rgba(255, 102, 132, 0.92);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55), 0 0 22px rgba(255, 92, 128, 0.32);
+  --frame: #ffca57;
+  --frame-soft: rgba(255, 202, 87, 0.5);
+  --glow: rgba(182, 92, 255, 0.42);
+  --bg-top: #26103e;
+  --bg-bot: #0b071b;
+  --pill-bg: rgba(154, 78, 255, 0.28);
+  --pill-txt: #f5d8ff;
+  --accent: #ffd97d;
 }
 
 .blessing-card:hover,
 .blessing-card:focus-visible {
-  transform: translateY(-3px);
-  border-color: rgba(255, 229, 153, 0.88);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 24px rgba(93, 247, 235, 0.24);
+  transform: translateY(-6px) scale(1.016);
+  box-shadow:
+    0 22px 54px rgba(0, 0, 0, 0.72),
+    0 0 40px var(--glow),
+    inset 0 0 28px rgba(255, 255, 255, 0.08);
   outline: none;
 }
 
-.blessing-card-head {
+.blessing-card:hover .blessing-astrolabe,
+.blessing-card:focus-visible .blessing-astrolabe {
+  animation-duration: 9s;
+  opacity: 0.92;
+}
+
+.blessing-card:hover .blessing-emblem-svg,
+.blessing-card:focus-visible .blessing-emblem-svg {
+  transform: scale(1.08);
+}
+
+.blessing-cards.is-banish-mode .blessing-card:hover,
+.blessing-cards.is-banish-mode .blessing-card:focus-visible {
+  --frame: #ff4d79;
+  --glow: rgba(255, 77, 121, 0.45);
+  border-color: #ff4d79;
+}
+
+.blessing-medallion {
+  position: relative;
+  width: 100%;
+  height: clamp(120px, 16.5vh, 190px);
+  display: grid;
+  place-items: center;
+  margin: 0.15rem 0 0.55rem;
+}
+
+.blessing-astrolabe {
+  position: absolute;
+  width: clamp(112px, 15vh, 174px);
+  height: clamp(112px, 15vh, 174px);
+  color: var(--frame);
+  opacity: 0.56;
+  animation: tarotSpinSlow 24s linear infinite;
+  transition: opacity 0.25s ease;
+}
+
+.blessing-emblem-svg {
+  position: relative;
+  z-index: 2;
+  width: clamp(74px, 10vh, 114px);
+  height: clamp(74px, 10vh, 114px);
+  color: var(--frame);
+  filter: drop-shadow(0 0 12px var(--frame)) drop-shadow(0 0 24px var(--glow));
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes tarotSpinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.blessing-card-pills {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 8px;
-}
-
-.blessing-card-tag {
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: #ffe699;
-}
-
-.blessing-card--utility .blessing-card-tag {
-  color: #8cfaf0;
-}
-
-.blessing-card-badges {
-  display: flex;
-  align-items: center;
-  gap: 0.38rem;
-  flex-shrink: 0;
+  justify-content: center;
+  gap: 0.42rem;
+  margin-bottom: 0.6rem;
 }
 
 .blessing-card-rank {
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  padding: 0.18rem 0.55rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.22rem 0.68rem;
   border-radius: 999px;
   white-space: nowrap;
-  background: rgba(255, 229, 153, 0.14);
-  border: 1px solid rgba(255, 229, 153, 0.38);
-  color: #ffe699;
+  background: var(--pill-bg);
+  border: 1px solid var(--frame-soft);
+  color: var(--pill-txt);
 }
 
-.blessing-card-rank.is-upgrade {
-  background: rgba(167, 139, 250, 0.2);
-  border-color: rgba(167, 139, 250, 0.55);
-  color: #e4d4ff;
+.blessing-card-key {
+  font-size: 0.8rem;
+  font-weight: 700;
+  min-width: 1.65rem;
+  text-align: center;
+  padding: 0.22rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--frame-soft);
+  color: #ffffff;
 }
 
-.blessing-card-rank.is-common {
-  background: rgba(154, 170, 188, 0.14);
-  border-color: rgba(154, 170, 188, 0.38);
-  color: #cbd8e6;
+.blessing-card-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
 }
 
-.blessing-card-rank.is-uncommon {
-  background: rgba(92, 238, 196, 0.16);
-  border-color: rgba(92, 238, 196, 0.52);
-  color: #9effdf;
+.blessing-card-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.85rem, 2.4vw, 2.45rem);
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.08;
+  margin-bottom: 0.25rem;
 }
 
-.blessing-card-rank.is-rare {
-  background: rgba(124, 168, 255, 0.2);
-  border-color: rgba(138, 180, 255, 0.62);
-  color: #c2d8ff;
+.blessing-card-desc {
+  font-size: 1.06rem;
+  line-height: 1.48;
+  color: rgba(230, 244, 255, 0.9);
+  margin-bottom: 0.55rem;
 }
 
-.blessing-card-rank.is-epic,
-.blessing-card-rank.is-max {
-  background: rgba(255, 214, 102, 0.26);
-  border-color: rgba(255, 214, 102, 0.78);
-  color: #fff6c9;
+.blessing-card-footer {
+  margin-top: auto;
+  padding-top: 0.35rem;
+  text-align: center;
+}
+
+.blessing-star-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  margin-bottom: 0.5rem;
+  color: var(--frame);
+  font-size: 0.78rem;
+}
+
+.blessing-star-divider::before,
+.blessing-star-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--frame-soft), transparent);
 }
 
 .blessing-card-hints {
-  margin-top: auto;
-  padding-top: 6px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 0.22rem;
 }
 
 .blessing-card-hint {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  line-height: 1.35;
-  letter-spacing: 0.03em;
-  color: rgba(158, 255, 245, 0.88);
+  line-height: 1.36;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+}
+
+.blessing-card--epic .blessing-card-hint {
+  color: #d6a4ff;
 }
 
 .blessing-card-hint.is-ready {
@@ -1801,39 +1981,15 @@ body {
 }
 
 .blessing-card-hint.is-evo {
-  color: #c7b8ff;
-}
-
-.blessing-card-key {
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 0.18rem 0.6rem;
-  border-radius: 999px;
-  background: rgba(93, 247, 235, 0.16);
-  border: 1px solid rgba(93, 247, 235, 0.42);
-  color: #b4fff9;
-}
-
-.blessing-card-title {
-  font-family: var(--font-display);
-  font-size: 1.72rem;
-  font-weight: 600;
-  color: #ffffff;
-  line-height: 1.15;
-}
-
-.blessing-card-desc {
-  font-size: 0.98rem;
-  line-height: 1.5;
-  color: rgba(224, 242, 252, 0.88);
+  color: #d6b8ff;
 }
 
 .panel-hint {
-  margin-top: 1rem;
-  font-size: 0.78rem;
+  margin-top: 0.9rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  letter-spacing: 0.18em;
-  color: rgba(175, 218, 236, 0.62);
+  letter-spacing: 0.16em;
+  color: rgba(186, 214, 236, 0.72);
 }
 
 /* Game Over Target Callout & Lower Challenges */
