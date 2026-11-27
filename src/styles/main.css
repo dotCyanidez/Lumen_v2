@@ -23,7 +23,8 @@
 }
 
 html {
-  font-size: clamp(15px, 0.42vw + 0.42vh + 3px, 25px);
+  /* Strictly proportional scaling: ~14px HD (720p), 16.8px FHD (1080p), 22.4px QHD (1440p), 33.6px 4K (2160p) */
+  font-size: clamp(14px, 0.56vw + 0.56vh, 33.6px);
 }
 
 html,
@@ -134,7 +135,7 @@ body {
 }
 
 .hud-hp-text {
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.06em;
@@ -144,8 +145,8 @@ body {
 
 .hud-hp-bar {
   position: relative;
-  width: 152px;
-  height: 10px;
+  width: 11.5rem;
+  height: 0.72rem;
   border-radius: 999px;
   padding: 1px;
   background: rgba(8, 18, 30, 0.72);
@@ -201,7 +202,7 @@ body {
 }
 
 .hud-shield-text {
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.06em;
@@ -211,8 +212,8 @@ body {
 
 .hud-shield-bar {
   position: relative;
-  width: 152px;
-  height: 7px;
+  width: 11.5rem;
+  height: 0.52rem;
   border-radius: 999px;
   padding: 1px;
   background: rgba(10, 20, 38, 0.72);
@@ -568,7 +569,7 @@ body {
 }
 
 .title-card {
-  width: min(100%, 710px);
+  width: min(94vw, 48rem);
   height: 100%;
   max-height: 100%;
   overflow-y: auto;
@@ -741,9 +742,9 @@ body {
    GLASS PANELS & BUTTONS
    ========================================================= */
 .glass-panel {
-  width: min(100%, 480px);
-  padding: clamp(26px, 4vw, 38px);
-  border-radius: 24px;
+  width: min(92vw, 34rem);
+  padding: clamp(1.4rem, 2.4vw, 2.4rem);
+  border-radius: 1.5rem;
   background: var(--bg-glass-strong);
   border: 1px solid var(--border-luminous);
   backdrop-filter: blur(22px);
@@ -755,7 +756,7 @@ body {
 }
 
 .guide-panel {
-  width: min(100%, 740px);
+  width: min(94vw, 52rem);
 }
 
 .panel-eyebrow {
@@ -1332,11 +1333,11 @@ body {
 }
 
 .settings-panel {
-  width: min(100%, 580px);
+  width: min(92vw, 40rem);
   max-height: 92vh;
   overflow-y: auto;
   scrollbar-width: none;
-  padding: clamp(20px, 3vh, 30px) clamp(20px, 3.6vw, 32px);
+  padding: clamp(1.25rem, 2.2vh, 1.9rem) clamp(1.25rem, 2.6vw, 2rem);
 }
 
 .settings-panel .panel-title {
@@ -2344,20 +2345,20 @@ button.loadout-chip.is-inspected {
 
 /* Sanctuary Modal */
 .sanctuary-panel {
-  width: min(100%, 720px);
+  width: min(94vw, 54rem);
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  padding: 22px 24px;
+  padding: 1.4rem 1.55rem;
   transition: width 0.22s ease;
 }
 
 .sanctuary-panel.is-tree-mode {
-  width: min(100%, 910px);
+  width: min(95vw, 66rem);
 }
 
 .sanctuary-panel.is-tree-mode .sanctuary-body {
-  max-height: min(68vh, 490px);
+  max-height: 70vh;
 }
 
 .sanctuary-head {
@@ -3411,13 +3412,13 @@ button.loadout-chip.is-inspected {
 
 #hud-minimap-canvas {
   display: block;
-  width: 154px;
-  height: 110px;
-  border-radius: 7px;
+  width: 10.5rem;
+  height: 7.5rem;
+  border-radius: 0.45rem;
 }
 
 .hud-minimap-label {
-  font-size: 0.52rem;
+  font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.22em;
   color: rgba(166, 232, 238, 0.62);
