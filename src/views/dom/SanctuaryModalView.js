@@ -31,11 +31,57 @@ const CONSTELLATION_CURVES = [
   { from: 'rightMid', to: 'rightCap', d: 'M 710 180 Q 825 190 870 300' },
 ];
 
+function buildTrailPreviewHtml(trailId) {
+  const styles = {
+    mist: `<svg class="look-trail-svg" viewBox="0 0 180 54" fill="none">
+      <path d="M12 36 Q 58 14, 102 28 T 164 22" stroke="#5ff7eb" stroke-width="11" stroke-linecap="round" opacity="0.22"/>
+      <path d="M12 36 Q 58 14, 102 28 T 164 22" stroke="#8dfaf2" stroke-width="3.4" stroke-linecap="round" opacity="0.9"/>
+      <circle cx="48" cy="22" r="2.2" fill="#b8fff9" opacity="0.75"/><circle cx="96" cy="34" r="2.6" fill="#5ff7eb" opacity="0.8"/>
+      <circle cx="136" cy="18" r="2" fill="#fff" opacity="0.85"/><circle cx="164" cy="22" r="5.5" fill="#fff"/>
+    </svg>`,
+    stardust: `<svg class="look-trail-svg" viewBox="0 0 180 54" fill="none">
+      <path d="M12 36 Q 60 12, 106 28 T 164 22" stroke="#7de8ff" stroke-width="8" stroke-linecap="round" opacity="0.2"/>
+      <path d="M12 36 Q 60 12, 106 28 T 164 22" stroke="#e4faff" stroke-width="2.4" stroke-dasharray="6 5" stroke-linecap="round"/>
+      <path d="M44 18l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#fff"/><path d="M98 24l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" fill="#ffe699"/>
+      <path d="M138 14l1.4 3.5 3.5 1.4-3.5 1.4-1.4 3.5-1.4-3.5-3.5-1.4 3.5-1.4z" fill="#fff"/>
+      <circle cx="164" cy="22" r="5.5" fill="#fff"/>
+    </svg>`,
+    prism: `<svg class="look-trail-svg" viewBox="0 0 180 54" fill="none">
+      <defs><linearGradient id="pvPrismG" x1="0" y1="0" x2="180" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#5ff7eb"/><stop offset="50%" stop-color="#c87dff"/><stop offset="100%" stop-color="#ffe699"/></linearGradient></defs>
+      <path d="M12 36 Q 58 10, 102 30 T 164 22" stroke="url(#pvPrismG)" stroke-width="12" stroke-linecap="round" opacity="0.28"/>
+      <path d="M12 36 Q 58 10, 102 30 T 164 22" stroke="url(#pvPrismG)" stroke-width="4.2" stroke-linecap="round"/>
+      <path d="M14 36 Q 58 10, 102 30 T 164 22" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity="0.85"/>
+      <circle cx="164" cy="22" r="5.5" fill="#fff"/>
+    </svg>`,
+    solar: `<svg class="look-trail-svg" viewBox="0 0 180 54" fill="none">
+      <defs><linearGradient id="pvSolarG" x1="0" y1="0" x2="180" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#ff6b4a"/><stop offset="55%" stop-color="#ffc857"/><stop offset="100%" stop-color="#fff8d6"/></linearGradient></defs>
+      <path d="M12 36 Q 58 14, 102 28 T 164 22" stroke="url(#pvSolarG)" stroke-width="13" stroke-linecap="round" opacity="0.32"/>
+      <path d="M12 36 Q 58 14, 102 28 T 164 22" stroke="url(#pvSolarG)" stroke-width="4.4" stroke-linecap="round"/>
+      <circle cx="52" cy="17" r="2.8" fill="#ffe699"/><circle cx="88" cy="36" r="2.4" fill="#ff9457"/>
+      <circle cx="128" cy="16" r="2.6" fill="#fff3ba"/><circle cx="164" cy="22" r="6" fill="#fff"/>
+    </svg>`,
+  };
+  return `<div class="look-preview look-preview--trail">${styles[trailId] || styles.mist}</div>`;
+}
+
+function buildPalettePreviewHtml(colorHex, accentHex) {
+  const c1 = hexToCss(colorHex || 0x5ff7eb);
+  const c2 = hexToCss(accentHex || colorHex || 0xffe699);
+  return `
+    <div class="look-preview look-preview--palette" style="--pal-a:${c1};--pal-b:${c2}">
+      <div class="look-orb-ring"></div>
+      <div class="look-orb-core"></div>
+      <div class="look-palette-bar"></div>
+    </div>
+  `;
+}
+
 export function makeSanctuaryCard({
   title,
   desc,
   badge = '',
   swatches = [],
+  visualHtml = '',
   pips = null,
   btnText,
   disabled = false,
@@ -44,6 +90,9 @@ export function makeSanctuaryCard({
 }) {
   const card = document.createElement('div');
   card.className = `sanctuary-item${equipped ? ' is-equipped' : ''}`;
+  if (visualHtml) {
+    card.insertAdjacentHTML('beforeend', visualHtml);
+  }
 
   const head = document.createElement('div');
   head.className = 'sanctuary-item-head';
@@ -419,7 +468,8 @@ export function renderSanctuary(elements, sanctuaryVM, payload = {}, callbacks =
         makeSanctuaryCard({
           title: tr.name,
           desc: tr.desc,
-          btnText: equipped ? 'EQUIPPED' : unlocked ? 'EQUIP' : `${tr.cost} LUM`,
+          visualHtml: buildTrailPreviewHtml(tr.id),
+          btnText: equipped ? '✦ EQUIPPED' : unlocked ? 'EQUIP' : `${tr.cost} LUM`,
           disabled: equipped || !canBuy,
           equipped,
           onAction: () => callbacks.onSelectTrail?.(tr.id),
@@ -434,17 +484,14 @@ export function renderSanctuary(elements, sanctuaryVM, payload = {}, callbacks =
       const unlocked = unlockedPalettes.includes(pal.id);
       const equipped = selectedPalette === pal.id;
       const canBuy = unlocked || luminance >= pal.cost;
-      const swatches = pal.colorHex
-        ? [pal.colorHex, pal.accentHex || pal.colorHex]
-        : [0x5df7eb, 0xffe699];
+      const c1 = pal.colorHex || 0x5df7eb;
+      const c2 = pal.accentHex || (pal.colorHex ? pal.colorHex : 0xffe699);
       elements.palettesEl.appendChild(
         makeSanctuaryCard({
           title: pal.name,
-          desc: pal.colorHex
-            ? 'Applies across spirit aura & projectiles.'
-            : 'Uses each Spirit aspect native colors.',
-          swatches,
-          btnText: equipped ? 'EQUIPPED' : unlocked ? 'EQUIP' : `${pal.cost} LUM`,
+          desc: pal.colorHex ? 'Spirit aura & bolts.' : 'Native Spirit hues.',
+          visualHtml: buildPalettePreviewHtml(c1, c2),
+          btnText: equipped ? '✦ EQUIPPED' : unlocked ? 'EQUIP' : `${pal.cost} LUM`,
           disabled: equipped || !canBuy,
           equipped,
           onAction: () => callbacks.onSelectPalette?.(pal.id),
@@ -482,6 +529,7 @@ export class SanctuaryModalView {
 
     this.vm.activeTab.subscribe((activeTab) => {
       this.elements.panelEl?.classList.toggle('is-tree-mode', activeTab === 'talents');
+      this.elements.panelEl?.classList.toggle('is-looks-mode', activeTab === 'looks');
       for (const btn of this.elements.tabs || []) {
         btn.classList.toggle('active', btn.dataset.tab === activeTab);
       }

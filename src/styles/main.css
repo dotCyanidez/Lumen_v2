@@ -2357,6 +2357,10 @@ button.loadout-chip.is-inspected {
   width: min(94vw, 66rem);
 }
 
+.sanctuary-panel.is-looks-mode {
+  width: min(94vw, 62rem);
+}
+
 .sanctuary-panel.is-tree-mode .sanctuary-body {
   max-height: 74vh;
 }
@@ -2428,6 +2432,68 @@ button.loadout-chip.is-inspected {
 
 .sanctuary-grid-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sanctuary-grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.sanctuary-grid-5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.look-preview {
+  position: relative;
+  width: 100%;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(95, 247, 235, 0.16);
+  background: radial-gradient(circle at 50% 50%, rgba(16, 36, 68, 0.72), rgba(4, 9, 22, 0.94));
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+.look-preview--trail {
+  height: 3.4rem;
+  padding: 0.2rem 0.35rem;
+}
+
+.look-trail-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.look-preview--palette {
+  height: 4.5rem;
+  background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--pal-a) 26%, transparent), rgba(4, 9, 22, 0.95) 72%);
+}
+
+.look-orb-ring {
+  position: absolute;
+  width: 2.55rem;
+  height: 2.55rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--pal-b);
+  opacity: 0.68;
+  box-shadow: 0 0 14px var(--pal-a);
+}
+
+.look-orb-core {
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, #ffffff 0%, var(--pal-a) 58%, var(--pal-b) 100%);
+  box-shadow: 0 0 18px var(--pal-a), 0 0 8px #ffffff;
+}
+
+.look-palette-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--pal-a), var(--pal-b));
 }
 
 .sanctuary-item {
