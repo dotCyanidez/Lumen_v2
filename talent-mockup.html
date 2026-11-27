@@ -1,0 +1,824 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LUMEN — Celestial Constellation Talent Tree Mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --font-display: 'Cormorant Garamond', Georgia, serif;
+        --font-sans: 'Outfit', system-ui, sans-serif;
+        --cyan: #5df7eb;
+        --gold: #ffcf6e;
+        --violet: #c88eff;
+        --bg-panel: rgba(5, 11, 26, 0.88);
+        --border: rgba(93, 247, 235, 0.24);
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html {
+        font-size: clamp(15px, 0.52vw + 0.52vh, 26px);
+      }
+      body {
+        min-height: 100vh;
+        font-family: var(--font-sans);
+        color: #f0faff;
+        background:
+          radial-gradient(circle at 30% 25%, rgba(44, 20, 88, 0.42), transparent 46%),
+          radial-gradient(circle at 75% 70%, rgba(12, 82, 114, 0.36), transparent 52%),
+          radial-gradient(circle at 50% 45%, #09152d 0%, #030712 75%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+      }
+
+      /* Top-right layout toggle bar */
+      .mode-bar {
+        position: fixed;
+        top: 14px;
+        right: 16px;
+        z-index: 30;
+        display: flex;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(4, 10, 24, 0.85);
+        border: 1px solid var(--border);
+        backdrop-filter: blur(10px);
+      }
+      .mode-btn {
+        border: 1px solid var(--border);
+        background: rgba(12, 26, 54, 0.72);
+        color: #d6f2ff;
+        font: 600 0.68rem var(--font-sans);
+        letter-spacing: 0.08em;
+        padding: 5px 12px;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: all 0.16s ease;
+      }
+      .mode-btn.active, .mode-btn:hover {
+        border-color: var(--cyan);
+        background: rgba(93, 247, 235, 0.18);
+        color: #fff;
+      }
+
+      /* Sanctuary Frame */
+      .sanctuary-shell {
+        width: min(95vw, 72rem);
+        border-radius: 1.4rem;
+        border: 1.5px solid rgba(93, 247, 235, 0.28);
+        background: var(--bg-panel);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7), 0 0 42px rgba(93, 247, 235, 0.08);
+        backdrop-filter: blur(18px);
+        padding: 1.45rem 1.65rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .shell-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+      .eyebrow {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.24em;
+        color: var(--cyan);
+        text-transform: uppercase;
+      }
+      .shell-title {
+        font-family: var(--font-display);
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #fff;
+        margin-top: 0.1rem;
+      }
+      .lum-pill {
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: var(--gold);
+        padding: 0.35rem 0.9rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 207, 110, 0.38);
+        background: rgba(255, 207, 110, 0.1);
+      }
+
+      /* Main 2-column constellation workspace */
+      .workspace {
+        display: grid;
+        grid-template-columns: 15.5rem 1fr;
+        gap: 1.1rem;
+        align-items: stretch;
+      }
+
+      /* Left Ability Rail */
+      .ability-rail {
+        display: flex;
+        flex-direction: column;
+        gap: 0.26rem;
+        padding: 0.75rem;
+        border-radius: 1rem;
+        background: rgba(4, 10, 24, 0.68);
+        border: 1px solid rgba(93, 247, 235, 0.16);
+      }
+      .rail-label {
+        font-size: 0.64rem;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        color: rgba(170, 214, 236, 0.68);
+        margin: 0 0 0.35rem 0.3rem;
+        text-transform: uppercase;
+      }
+      .rail-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        width: 100%;
+        padding: 0.48rem 0.65rem;
+        border-radius: 0.65rem;
+        border: 1px solid transparent;
+        background: transparent;
+        color: rgba(214, 238, 250, 0.82);
+        font: 600 0.78rem var(--font-sans);
+        cursor: pointer;
+        text-align: left;
+        transition: all 0.15s ease;
+      }
+      .rail-btn:hover {
+        background: rgba(93, 247, 235, 0.08);
+        color: #fff;
+      }
+      .rail-btn.active {
+        background: linear-gradient(90deg, rgba(93, 247, 235, 0.2), rgba(93, 247, 235, 0.05));
+        border-color: rgba(93, 247, 235, 0.52);
+        color: #fff;
+        box-shadow: 0 0 18px rgba(93, 247, 235, 0.14);
+      }
+      .rail-icon {
+        width: 1.15rem;
+        height: 1.15rem;
+        color: var(--cyan);
+        flex-shrink: 0;
+        display: grid;
+        place-items: center;
+      }
+      .rail-icon svg { width: 100%; height: 100%; }
+      .rail-name { flex: 1; white-space: nowrap; }
+      .rail-rank {
+        font-size: 0.68rem;
+        color: rgba(180, 218, 238, 0.68);
+        font-variant-numeric: tabular-nums;
+      }
+      .rail-btn.has-pts .rail-rank { color: var(--gold); }
+
+      /* Right Hero Constellation + Bottom Inspector */
+      .constellation-col {
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+      }
+
+      /* Celestial Star-Chart Stage */
+      .star-stage {
+        position: relative;
+        flex: 1;
+        min-height: 23rem;
+        border-radius: 1.15rem;
+        border: 1.5px solid rgba(93, 247, 235, 0.34);
+        background:
+          radial-gradient(circle at 50% 50%, rgba(93, 247, 235, 0.12) 0%, rgba(16, 26, 58, 0.55) 42%, rgba(3, 8, 20, 0.94) 82%);
+        box-shadow: inset 0 0 42px rgba(93, 247, 235, 0.08);
+        overflow: hidden;
+      }
+      .star-stage::before {
+        content: '';
+        position: absolute;
+        inset: 7px;
+        border-radius: 0.88rem;
+        border: 1px solid rgba(93, 247, 235, 0.18);
+        pointer-events: none;
+      }
+
+      /* Corner celestial glints */
+      .stage-corner {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        color: var(--cyan);
+        opacity: 0.7;
+        pointer-events: none;
+      }
+      .stage-corner.tl { top: 10px; left: 10px; }
+      .stage-corner.tr { top: 10px; right: 10px; }
+      .stage-corner.bl { bottom: 10px; left: 10px; }
+      .stage-corner.br { bottom: 10px; right: 10px; }
+
+      .stage-topbar {
+        position: relative;
+        z-index: 4;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.85rem 1.25rem 0;
+      }
+      .stage-ab-title {
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        color: var(--cyan);
+        text-transform: uppercase;
+      }
+      .start-btn {
+        border: 1px solid rgba(255, 207, 110, 0.5);
+        background: rgba(255, 207, 110, 0.12);
+        color: var(--gold);
+        font: 700 0.66rem var(--font-sans);
+        letter-spacing: 0.14em;
+        padding: 0.3rem 0.85rem;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+
+      /* Rotating Astrolabe + Watermark Spell Emblem behind the constellation */
+      .stage-backdrop {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        pointer-events: none;
+      }
+      .stage-astrolabe {
+        width: 22rem;
+        height: 22rem;
+        color: rgba(93, 247, 235, 0.22);
+        animation: spinVerySlow 48s linear infinite;
+      }
+      .stage-watermark {
+        position: absolute;
+        width: 11rem;
+        height: 11rem;
+        color: rgba(93, 247, 235, 0.1);
+        filter: blur(0.4px);
+      }
+      @keyframes spinVerySlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+      /* Curved Constellation Links SVG */
+      .constellation-svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 2;
+      }
+      .c-path {
+        fill: none;
+        stroke: rgba(130, 210, 235, 0.22);
+        stroke-width: 2;
+        stroke-dasharray: 5 5;
+        transition: all 0.3s ease;
+      }
+      .c-path.is-unlocked {
+        stroke: rgba(93, 247, 235, 0.8);
+        stroke-dasharray: none;
+        stroke-width: 2.6;
+        filter: drop-shadow(0 0 6px rgba(93, 247, 235, 0.7));
+      }
+      .c-path.is-maxed {
+        stroke: #ffcf6e;
+        stroke-dasharray: none;
+        stroke-width: 3;
+        filter: drop-shadow(0 0 8px rgba(255, 207, 110, 0.85));
+      }
+
+      /* Path Wing Labels */
+      .wing-label {
+        position: absolute;
+        z-index: 3;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: rgba(160, 218, 242, 0.52);
+        white-space: nowrap;
+        pointer-events: none;
+      }
+
+      /* Celestial Star Nodes */
+      .star-node {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        z-index: 5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.35rem;
+        background: transparent;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        font-family: inherit;
+        width: 8.6rem;
+        transition: transform 0.18s ease;
+      }
+      .star-node:hover {
+        transform: translate(-50%, -50%) scale(1.07);
+      }
+      .node-orb {
+        position: relative;
+        width: 4.1rem;
+        height: 4.1rem;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(circle, rgba(14, 32, 66, 0.96), rgba(4, 10, 24, 0.98));
+        border: 2px solid rgba(130, 205, 235, 0.34);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+        transition: all 0.2s ease;
+      }
+      .star-node.is-root .node-orb {
+        width: 4.9rem;
+        height: 4.9rem;
+        border-width: 2.4px;
+      }
+      .star-node.is-cap .node-orb {
+        border-radius: 0.9rem;
+        transform: rotate(45deg);
+        width: 3.6rem;
+        height: 3.6rem;
+      }
+      .star-node.is-cap .node-orb > * {
+        transform: rotate(-45deg);
+      }
+      .node-orb svg.node-glyph {
+        width: 1.55rem;
+        height: 1.55rem;
+        color: rgba(180, 220, 242, 0.72);
+      }
+      .star-node.is-root .node-orb svg.node-glyph {
+        width: 3.1rem;
+        height: 3.1rem;
+      }
+
+      /* Rank Pips Ring */
+      .node-pips {
+        display: flex;
+        gap: 3px;
+        margin-top: 2px;
+      }
+      .pip {
+        width: 0.42rem;
+        height: 0.22rem;
+        border-radius: 99px;
+        background: rgba(255, 255, 255, 0.16);
+      }
+      .pip.lit {
+        background: var(--cyan);
+        box-shadow: 0 0 6px var(--cyan);
+      }
+      .star-node.is-maxed .pip.lit {
+        background: var(--gold);
+        box-shadow: 0 0 6px var(--gold);
+      }
+
+      /* Node States */
+      .star-node.is-locked { opacity: 0.52; }
+      .star-node.is-available .node-orb {
+        border-color: rgba(93, 247, 235, 0.68);
+        box-shadow: 0 0 22px rgba(93, 247, 235, 0.26);
+      }
+      .star-node.is-available .node-orb svg.node-glyph { color: var(--cyan); }
+      .star-node.is-invested .node-orb {
+        border-color: var(--cyan);
+        background: radial-gradient(circle, rgba(20, 62, 86, 0.96), rgba(6, 16, 36, 0.98));
+        box-shadow: 0 0 26px rgba(93, 247, 235, 0.42);
+      }
+      .star-node.is-invested .node-orb svg.node-glyph { color: #fff; }
+      .star-node.is-maxed .node-orb {
+        border-color: var(--gold);
+        background: radial-gradient(circle, rgba(72, 42, 92, 0.96), rgba(14, 10, 32, 0.98));
+        box-shadow: 0 0 30px rgba(255, 207, 110, 0.55);
+      }
+      .star-node.is-maxed .node-orb svg.node-glyph { color: var(--gold); }
+
+      .star-node.is-selected .node-orb {
+        outline: 2.5px solid #fff;
+        outline-offset: 4px;
+      }
+
+      .node-name {
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: #f4fbff;
+        text-align: center;
+        text-shadow: 0 2px 10px #000;
+        margin-top: 0.15rem;
+      }
+      .star-node.is-cap .node-name { margin-top: 0.42rem; }
+      .node-lv {
+        font-size: 0.62rem;
+        color: rgba(186, 224, 244, 0.72);
+      }
+
+      /* Sleek Bottom Inspector Bar (replaces cramped 3rd column!) */
+      .inspector-bar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1.2rem;
+        align-items: center;
+        padding: 1rem 1.3rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(93, 247, 235, 0.28);
+        background: linear-gradient(135deg, rgba(10, 24, 52, 0.88), rgba(5, 11, 26, 0.94));
+      }
+      .insp-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 0.25rem;
+      }
+      .insp-tag {
+        font-size: 0.66rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        color: var(--cyan);
+        text-transform: uppercase;
+      }
+      .insp-pill {
+        font-size: 0.62rem;
+        font-weight: 700;
+        padding: 0.16rem 0.55rem;
+        border-radius: 999px;
+        background: rgba(93, 247, 235, 0.16);
+        border: 1px solid rgba(93, 247, 235, 0.4);
+        color: #c2fff9;
+      }
+      .insp-title {
+        font-family: var(--font-display);
+        font-size: 1.55rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 0.2rem;
+      }
+      .insp-desc {
+        font-size: 0.84rem;
+        color: rgba(214, 236, 250, 0.86);
+        line-height: 1.42;
+      }
+      .insp-next {
+        margin-top: 0.38rem;
+        font-size: 0.78rem;
+        color: var(--gold);
+        font-weight: 600;
+      }
+      .insp-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.45rem;
+      }
+      .upgrade-btn {
+        border: 1.5px solid var(--cyan);
+        background: linear-gradient(135deg, rgba(22, 74, 96, 0.92), rgba(10, 32, 56, 0.95));
+        color: #fff;
+        font: 700 0.82rem var(--font-sans);
+        letter-spacing: 0.12em;
+        padding: 0.7rem 1.55rem;
+        border-radius: 999px;
+        cursor: pointer;
+        box-shadow: 0 0 22px rgba(93, 247, 235, 0.24);
+        white-space: nowrap;
+        transition: all 0.16s ease;
+      }
+      .upgrade-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 30px rgba(93, 247, 235, 0.42);
+      }
+      .upgrade-btn.is-maxed {
+        border-color: var(--gold);
+        color: var(--gold);
+        background: rgba(255, 207, 110, 0.14);
+        cursor: default;
+      }
+      .reset-demo-btn {
+        border: none;
+        background: transparent;
+        color: rgba(180, 214, 236, 0.6);
+        font: 600 0.66rem var(--font-sans);
+        letter-spacing: 0.12em;
+        cursor: pointer;
+        text-transform: uppercase;
+      }
+      .reset-demo-btn:hover { color: #fff; }
+    </style>
+  </head>
+  <body>
+    <div class="mode-bar">
+      <button class="mode-btn active" data-layout="wings">Constellation Wings (Horizontal)</button>
+      <button class="mode-btn" data-layout="spire">Celestial Spire (Radial Arc)</button>
+    </div>
+
+    <div class="sanctuary-shell">
+      <div class="shell-head">
+        <div>
+          <div class="eyebrow">✦ Eternal Progression · Constellation Talents ✦</div>
+          <h1 class="shell-title">The Sanctuary</h1>
+        </div>
+        <div class="lum-pill">125,000 LUM</div>
+      </div>
+
+      <div class="workspace">
+        <aside class="ability-rail" id="ability-rail"></aside>
+
+        <section class="constellation-col">
+          <div class="star-stage" id="star-stage">
+            <span class="stage-corner tl" id="c-tl"></span>
+            <span class="stage-corner tr" id="c-tr"></span>
+            <span class="stage-corner bl" id="c-bl"></span>
+            <span class="stage-corner br" id="c-br"></span>
+            <div class="stage-topbar">
+              <div class="stage-ab-title" id="stage-ab-title">STARLIGHT BOLT · CONSTELLATION</div>
+              <button class="start-btn" type="button">★ SET START ABILITY</button>
+            </div>
+            <div class="stage-backdrop" id="stage-backdrop"></div>
+            <svg class="constellation-svg" id="constellation-svg" viewBox="0 0 1000 500" preserveAspectRatio="none"></svg>
+            <div id="stage-nodes"></div>
+          </div>
+
+          <div class="inspector-bar" id="inspector-bar"></div>
+        </section>
+      </div>
+    </div>
+
+    <script type="module">
+      import { ABILITY_TALENT_GROUPS, BLESSINGS } from '/src/core/Constants.js';
+      import {
+        ABILITY_CARD_EMBLEMS,
+        ABILITY_ICONS,
+        TALENT_GLYPHS,
+        TAROT_ASTROLABE_SVG,
+        TAROT_STAR_SVG,
+      } from '/src/views/dom/DomIcons.js';
+
+      document.getElementById('c-tl').innerHTML = TAROT_STAR_SVG;
+      document.getElementById('c-tr').innerHTML = TAROT_STAR_SVG;
+      document.getElementById('c-bl').innerHTML = TAROT_STAR_SVG;
+      document.getElementById('c-br').innerHTML = TAROT_STAR_SVG;
+
+      // Demo ranks (pre-invested Starlight Bolt & Voltaic Arc so you see glowing paths right away!)
+      const demoRanks = {
+        rv_velocity: 4,
+        rv_ricochet: 2,
+        rv_starfire: 1,
+        vc_coil: 4,
+        vc_relay: 4,
+        vc_fork: 4,
+      };
+
+      let layout = 'wings'; // 'wings' | 'spire'
+      let activeAbId = 'resonant_volley';
+      let selectedNodeId = 'rv_ricochet';
+
+      // Node coordinates in % (and 1000x500 SVG space)
+      const LAYOUTS = {
+        wings: {
+          coords: {
+            root: { x: 50, y: 52 },
+            leftMid: { x: 29, y: 36 },
+            leftCap: { x: 13, y: 60 },
+            rightMid: { x: 71, y: 36 },
+            rightCap: { x: 87, y: 60 },
+          },
+          curves: [
+            { from: 'root', to: 'leftMid', d: 'M 500 260 Q 400 185 290 180' },
+            { from: 'leftMid', to: 'leftCap', d: 'M 290 180 Q 175 190 130 300' },
+            { from: 'root', to: 'rightMid', d: 'M 500 260 Q 600 185 710 180' },
+            { from: 'rightMid', to: 'rightCap', d: 'M 710 180 Q 825 190 870 300' },
+          ],
+          labels: [
+            { text: '✦ Left Branch', x: 14, y: 88 },
+            { text: 'Right Branch ✦', x: 86, y: 88 },
+          ],
+        },
+        spire: {
+          coords: {
+            root: { x: 50, y: 79 },
+            leftMid: { x: 30, y: 54 },
+            leftCap: { x: 20, y: 29 },
+            rightMid: { x: 70, y: 54 },
+            rightCap: { x: 80, y: 29 },
+          },
+          curves: [
+            { from: 'root', to: 'leftMid', d: 'M 500 395 Q 370 360 300 270' },
+            { from: 'leftMid', to: 'leftCap', d: 'M 300 270 Q 225 205 200 145' },
+            { from: 'root', to: 'rightMid', d: 'M 500 395 Q 630 360 700 270' },
+            { from: 'rightMid', to: 'rightCap', d: 'M 700 270 Q 775 205 800 145' },
+          ],
+          labels: [
+            { text: '✦ Branch I', x: 16, y: 88 },
+            { text: 'Branch II ✦', x: 84, y: 88 },
+          ],
+        },
+      };
+
+      function getNodes(abId) {
+        return ABILITY_TALENT_GROUPS.get(abId) || [];
+      }
+
+      function isUnlocked(node, nodes) {
+        if (!node.requires) return true;
+        const req = nodes.find((n) => n.id === node.requires);
+        return req ? (demoRanks[req.id] || 0) >= 1 : true;
+      }
+
+      function renderRail() {
+        const rail = document.getElementById('ability-rail');
+        rail.innerHTML = `<div class="rail-label">Talent Constellations</div>${BLESSINGS.map((b) => {
+          const nodes = getNodes(b.id);
+          const cur = nodes.reduce((s, n) => s + (demoRanks[n.id] || 0), 0);
+          const max = nodes.reduce((s, n) => s + n.maxLevel, 0);
+          return `
+            <button class="rail-btn ${b.id === activeAbId ? 'active' : ''} ${cur > 0 ? 'has-pts' : ''}" data-ab="${b.id}">
+              <span class="rail-icon">${ABILITY_ICONS[b.id] || ''}</span>
+              <span class="rail-name">${b.name}</span>
+              <span class="rail-rank">${cur}/${max}</span>
+            </button>`;
+        }).join('')}`;
+
+        rail.querySelectorAll('[data-ab]').forEach((btn) =>
+          btn.addEventListener('click', () => {
+            activeAbId = btn.dataset.ab;
+            const nodes = getNodes(activeAbId);
+            selectedNodeId = nodes[0]?.id || null;
+            renderAll();
+          })
+        );
+      }
+
+      function renderStage() {
+        const ab = BLESSINGS.find((b) => b.id === activeAbId) || BLESSINGS[0];
+        const nodes = getNodes(activeAbId);
+        const bySlot = Object.fromEntries(nodes.map((n) => [n.slot, n]));
+        const cfg = LAYOUTS[layout];
+
+        document.getElementById('stage-ab-title').textContent = `${ab.name.toUpperCase()} · STAR CONSTELLATION`;
+        document.getElementById('stage-backdrop').innerHTML = TAROT_ASTROLABE_SVG.replace(
+          'blessing-astrolabe',
+          'stage-astrolabe'
+        );
+
+        // Curved glowing constellation paths
+        const svg = document.getElementById('constellation-svg');
+        svg.innerHTML = cfg.curves
+          .map((c) => {
+            const fromNode = bySlot[c.from];
+            const toNode = bySlot[c.to];
+            const fromR = fromNode ? demoRanks[fromNode.id] || 0 : 0;
+            const toR = toNode ? demoRanks[toNode.id] || 0 : 0;
+            const cls =
+              toNode && toR >= toNode.maxLevel
+                ? 'is-maxed'
+                : fromR > 0 && toR > 0
+                  ? 'is-unlocked'
+                  : '';
+            return `<path class="c-path ${cls}" d="${c.d}"/>`;
+          })
+          .join('');
+
+        // Nodes + wing labels
+        const nodesEl = document.getElementById('stage-nodes');
+        const labelHtml = cfg.labels
+          .map(
+            (l) =>
+              `<div class="wing-label" style="left:${l.x}%;top:${l.y}%;transform:translateX(-50%)">${l.text}</div>`
+          )
+          .join('');
+
+        const nodeHtml = nodes
+          .map((n) => {
+            const pos = cfg.coords[n.slot] || { x: 50, y: 50 };
+            const r = demoRanks[n.id] || 0;
+            const unlocked = isUnlocked(n, nodes);
+            const stateCls =
+              r >= n.maxLevel
+                ? 'is-maxed'
+                : r > 0
+                  ? 'is-invested'
+                  : unlocked
+                    ? 'is-available'
+                    : 'is-locked';
+            const shapeCls = n.slot === 'root' ? 'is-root' : n.slot.includes('Cap') ? 'is-cap' : '';
+            const glyph =
+              n.slot === 'root'
+                ? (ABILITY_CARD_EMBLEMS[activeAbId] || ABILITY_ICONS[activeAbId]).replace(
+                    'blessing-emblem-svg',
+                    'node-glyph'
+                  )
+                : (TALENT_GLYPHS[n.glyph] || ABILITY_ICONS[activeAbId]).replace(
+                    '<svg ',
+                    '<svg class="node-glyph" '
+                  );
+            const pips = Array.from(
+              { length: n.maxLevel },
+              (_, i) => `<span class="pip ${i < r ? 'lit' : ''}"></span>`
+            ).join('');
+
+            return `
+              <button class="star-node ${stateCls} ${shapeCls} ${n.id === selectedNodeId ? 'is-selected' : ''}"
+                      data-node="${n.id}" style="left:${pos.x}%;top:${pos.y}%">
+                <div class="node-orb">
+                  ${glyph}
+                </div>
+                <div class="node-name">${n.name}</div>
+                <div class="node-pips">${pips}</div>
+                <div class="node-lv">LV ${r} / ${n.maxLevel}</div>
+              </button>`;
+          })
+          .join('');
+
+        nodesEl.innerHTML = labelHtml + nodeHtml;
+        nodesEl.querySelectorAll('[data-node]').forEach((btn) =>
+          btn.addEventListener('click', () => {
+            selectedNodeId = btn.dataset.node;
+            renderStage();
+            renderInspector();
+          })
+        );
+      }
+
+      function renderInspector() {
+        const ab = BLESSINGS.find((b) => b.id === activeAbId) || BLESSINGS[0];
+        const nodes = getNodes(activeAbId);
+        const node = nodes.find((n) => n.id === selectedNodeId) || nodes[0];
+        if (!node) return;
+        const r = demoRanks[node.id] || 0;
+        const maxed = r >= node.maxLevel;
+        const unlocked = isUnlocked(node, nodes);
+        const cost = maxed ? 0 : node.costs[r];
+
+        const bar = document.getElementById('inspector-bar');
+        bar.innerHTML = `
+          <div>
+            <div class="insp-meta">
+              <span class="insp-tag">✦ ${ab.name}</span>
+              <span class="insp-pill">${maxed ? 'MAXED' : unlocked ? `LEVEL ${r} / ${node.maxLevel}` : 'LOCKED'}</span>
+            </div>
+            <div class="insp-title">${node.name}</div>
+            <div class="insp-desc">${node.desc}</div>
+            <div class="insp-next">${
+              maxed
+                ? `Current (MAX): ${node.rankText(node.maxLevel)}`
+                : `Next (LV ${r + 1}): ${node.rankText(r + 1)}`
+            }</div>
+          </div>
+          <div class="insp-actions">
+            <button class="upgrade-btn ${maxed ? 'is-maxed' : ''}" id="btn-demo-up">
+              ${maxed ? '★ CONSTELLATION MAXED' : unlocked ? `AWAKEN · ${cost.toLocaleString()} LUM` : 'REQUIRES PRIOR STAR'}
+            </button>
+            <button class="reset-demo-btn" id="btn-demo-reset">Reset Demo Tree</button>
+          </div>
+        `;
+
+        bar.querySelector('#btn-demo-up')?.addEventListener('click', () => {
+          if (!maxed && unlocked) {
+            demoRanks[node.id] = r + 1;
+            renderAll();
+          }
+        });
+        bar.querySelector('#btn-demo-reset')?.addEventListener('click', () => {
+          for (const n of nodes) demoRanks[n.id] = 0;
+          renderAll();
+        });
+      }
+
+      function renderAll() {
+        renderRail();
+        renderStage();
+        renderInspector();
+      }
+
+      document.querySelectorAll('[data-layout]').forEach((btn) =>
+        btn.addEventListener('click', () => {
+          layout = btn.dataset.layout;
+          document.querySelectorAll('[data-layout]').forEach((b) =>
+            b.classList.toggle('active', b.dataset.layout === layout)
+          );
+          renderStage();
+        })
+      );
+
+      renderAll();
+    </script>
+  </body>
+</html>

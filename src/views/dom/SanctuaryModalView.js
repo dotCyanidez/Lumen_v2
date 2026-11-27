@@ -8,19 +8,28 @@ import {
   getAbilityInfo,
 } from '../../core/Constants.js';
 import {
+  ABILITY_CARD_EMBLEMS,
   ABILITY_ICONS,
   TALENT_GLYPHS,
-  buildTalentRingSvg,
+  TAROT_ASTROLABE_SVG,
+  TAROT_STAR_SVG,
   hexToCss,
 } from './DomIcons.js';
 
 const SLOT_POS = {
-  root: { xPct: 50, top: 10, svgX: 200, svgY: 41 },
-  leftMid: { xPct: 26, top: 120, svgX: 104, svgY: 151 },
-  rightMid: { xPct: 74, top: 120, svgX: 296, svgY: 151 },
-  leftCap: { xPct: 26, top: 230, svgX: 104, svgY: 261 },
-  rightCap: { xPct: 74, top: 230, svgX: 296, svgY: 261 },
+  root: { xPct: 50, yPct: 52 },
+  leftMid: { xPct: 29, yPct: 36 },
+  leftCap: { xPct: 13, yPct: 60 },
+  rightMid: { xPct: 71, yPct: 36 },
+  rightCap: { xPct: 87, yPct: 60 },
 };
+
+const CONSTELLATION_CURVES = [
+  { from: 'root', to: 'leftMid', d: 'M 500 260 Q 400 185 290 180' },
+  { from: 'leftMid', to: 'leftCap', d: 'M 290 180 Q 175 190 130 300' },
+  { from: 'root', to: 'rightMid', d: 'M 500 260 Q 600 185 710 180' },
+  { from: 'rightMid', to: 'rightCap', d: 'M 710 180 Q 825 190 870 300' },
+];
 
 export function makeSanctuaryCard({
   title,
@@ -162,7 +171,10 @@ export function renderTalentsTree(container, sanctuaryVM, payload = {}, callback
   }
   groupsCol.appendChild(groupsList);
 
-  // 2. Center Column: 5-node (1 -> 2 -> 2) TALENT TREE
+  // 2. Right Hero Workspace: Constellation Star-Chart + Bottom Inspector Bar
+  const rightCol = document.createElement('div');
+  rightCol.className = 'fork-constellation-col';
+
   const treeCol = document.createElement('section');
   treeCol.className = 'fork-col fork-tree-col';
   const groupInfo = getAbilityInfo(groupId);
@@ -170,9 +182,12 @@ export function renderTalentsTree(container, sanctuaryVM, payload = {}, callback
   const canStart = unlockedStartAbilities.includes(groupId);
   const isStartGroup = selectedStartAbility === groupId;
 
+  const stage = document.createElement('div');
+  stage.className = 'fork-tree-stage';
+
   const headRow = document.createElement('div');
-  headRow.className = 'fork-col-headrow';
-  headRow.innerHTML = `<div class="fork-col-heading">${groupName.toUpperCase()} · TALENT TREE</div>`;
+  headRow.className = 'fork-col-headrow fork-stage-topbar';
+  headRow.innerHTML = `<div class="fork-col-heading">${groupName.toUpperCase()} · STAR CONSTELLATION</div>`;
   if (canStart) {
     const startBtn = document.createElement('button');
     startBtn.type = 'button';
@@ -187,29 +202,30 @@ export function renderTalentsTree(container, sanctuaryVM, payload = {}, callback
     lockNote.textContent = 'Talent unlocks Start';
     headRow.appendChild(lockNote);
   }
-  treeCol.appendChild(headRow);
 
-  const stage = document.createElement('div');
-  stage.className = 'fork-tree-stage';
+  const bySlot = Object.fromEntries(groupNodes.map((n) => [n.slot, n]));
+  const curvePaths = CONSTELLATION_CURVES.map((c) => {
+    const fromNode = bySlot[c.from];
+    const toNode = bySlot[c.to];
+    const fromRank = fromNode ? Math.max(0, Number(talentRanks?.[fromNode.id]) || 0) : 0;
+    const toRank = toNode ? Math.max(0, Number(talentRanks?.[toNode.id]) || 0) : 0;
+    const parentMet = fromNode ? fromRank >= (fromNode.maxLevel || 1) : false;
+    const toMaxed = toNode ? toRank >= (toNode.maxLevel || 1) : false;
+    const cls = toMaxed ? 'is-maxed' : parentMet && toRank > 0 ? 'is-active' : parentMet ? 'is-unlocked' : '';
+    return `<path class="fork-constellation-path ${cls}" d="${c.d}" vector-effect="non-scaling-stroke" />`;
+  }).join('');
 
-  const linkLines = groupNodes
-    .filter((n) => n.requires)
-    .map((n) => {
-      const parent =
-        groupNodes.find((p) => p.id === n.requires) || ABILITY_TALENTS_BY_ID[n.requires];
-      const pPos = SLOT_POS[parent?.slot || 'root'];
-      const cPos = SLOT_POS[n.slot || 'leftMid'];
-      const pRank = Math.max(0, Number(talentRanks?.[parent?.id]) || 0);
-      const cRank = Math.max(0, Number(talentRanks?.[n.id]) || 0);
-      const parentMet = pRank >= (parent?.maxLevel || 1);
-      const cls = parentMet && cRank > 0 ? 'is-active' : parentMet ? 'is-unlocked' : '';
-      return `
-        <line class="fork-link-glow ${cls}" x1="${pPos.svgX}" y1="${pPos.svgY}" x2="${cPos.svgX}" y2="${cPos.svgY}" vector-effect="non-scaling-stroke" />
-        <line class="fork-link-line ${cls}" x1="${pPos.svgX}" y1="${pPos.svgY}" x2="${cPos.svgX}" y2="${cPos.svgY}" vector-effect="non-scaling-stroke" />
-      `;
-    })
-    .join('');
-  stage.innerHTML = `<svg class="fork-tree-svg" viewBox="0 0 400 340" preserveAspectRatio="none" aria-hidden="true">${linkLines}</svg>`;
+  stage.innerHTML = `
+    <span class="fork-stage-corner tl">${TAROT_STAR_SVG}</span>
+    <span class="fork-stage-corner tr">${TAROT_STAR_SVG}</span>
+    <span class="fork-stage-corner bl">${TAROT_STAR_SVG}</span>
+    <span class="fork-stage-corner br">${TAROT_STAR_SVG}</span>
+    <div class="fork-stage-backdrop">${TAROT_ASTROLABE_SVG.replace('blessing-astrolabe', 'fork-stage-astrolabe')}</div>
+    <svg class="fork-tree-svg" viewBox="0 0 1000 500" preserveAspectRatio="none" aria-hidden="true">${curvePaths}</svg>
+    <div class="fork-wing-label" style="left:14%;top:88%">✦ Left Branch</div>
+    <div class="fork-wing-label" style="left:86%;top:88%">Right Branch ✦</div>
+  `;
+  stage.prepend(headRow);
 
   for (const t of groupNodes) {
     const pos = SLOT_POS[t.slot] || SLOT_POS.root;
@@ -221,23 +237,35 @@ export function renderTalentsTree(container, sanctuaryVM, payload = {}, callback
     const needed = reqNode ? reqNode.maxLevel : 0;
     const prereqMet = !reqNode || reqRank >= needed;
     const isSelected = t.id === selectedTalentId;
-    const glyph = TALENT_GLYPHS[t.glyph] || ABILITY_ICONS[groupId] || ABILITY_ICONS.resonant_volley;
+    const isRoot = t.slot === 'root';
+    const isCap = t.slot.includes('Cap');
+    const rawGlyph = isRoot
+      ? (ABILITY_CARD_EMBLEMS[groupId] || ABILITY_ICONS[groupId] || ABILITY_ICONS.resonant_volley).replace(
+          'blessing-emblem-svg',
+          'fork-node-glyph'
+        )
+      : (TALENT_GLYPHS[t.glyph] || ABILITY_ICONS[groupId] || ABILITY_ICONS.resonant_volley).replace(
+          '<svg ',
+          '<svg class="fork-node-glyph" '
+        );
+    const pipsHtml = Array.from(
+      { length: maxLevel },
+      (_, i) => `<span class="fork-star-pip${i < level ? ' is-lit' : ''}"></span>`
+    ).join('');
 
     const nodeBtn = document.createElement('button');
     nodeBtn.type = 'button';
     nodeBtn.dataset.talentId = t.id;
     nodeBtn.dataset.slot = t.slot;
     nodeBtn.style.left = `${pos.xPct}%`;
-    nodeBtn.style.top = `${pos.top}px`;
-    nodeBtn.className = `fork-tree-node${isSelected ? ' is-selected' : ''}${level > 0 ? ' is-unlocked' : ''}${maxed ? ' is-active is-maxed' : ''}${!prereqMet ? ' is-locked-node' : ''}`;
+    nodeBtn.style.top = `${pos.yPct}%`;
+    nodeBtn.className = `fork-tree-node${isRoot ? ' is-root' : ''}${isCap ? ' is-cap' : ''}${isSelected ? ' is-selected' : ''}${level > 0 ? ' is-unlocked' : ''}${maxed ? ' is-active is-maxed' : ''}${!prereqMet ? ' is-locked-node' : ''}`;
     nodeBtn.setAttribute('aria-pressed', String(isSelected));
     nodeBtn.innerHTML = `
-      <div class="fork-node-ring-wrap">
-        ${buildTalentRingSvg(level, maxLevel)}
-        <div class="fork-node-circle">${glyph}</div>
-      </div>
+      <div class="fork-node-orb">${rawGlyph}</div>
       <div class="fork-node-name">${t.name}</div>
-      <div class="fork-node-level">Level ${level} / ${maxLevel}</div>
+      <div class="fork-star-pips">${pipsHtml}</div>
+      <div class="fork-node-level">LV ${level} / ${maxLevel}</div>
     `;
     nodeBtn.addEventListener('click', () => {
       callbacks.onUIClick?.();
@@ -247,11 +275,11 @@ export function renderTalentsTree(container, sanctuaryVM, payload = {}, callback
     stage.appendChild(nodeBtn);
   }
   treeCol.appendChild(stage);
+  rightCol.appendChild(treeCol);
 
-  // 3. Right Column: SELECTED TALENT Detail Panel
+  // 3. Bottom Horizontal Inspector Bar: SELECTED TALENT
   const detailCol = document.createElement('section');
-  detailCol.className = 'fork-col fork-detail-col';
-  detailCol.innerHTML = `<div class="fork-col-heading">SELECTED TALENT</div>`;
+  detailCol.className = 'fork-col fork-detail-col fork-inspector-bar';
 
   const sel = groupNodes.find((n) => n.id === selectedTalentId) || groupNodes[0];
   if (sel) {
@@ -270,7 +298,7 @@ export function renderTalentsTree(container, sanctuaryVM, payload = {}, callback
       : !prereqMet
         ? 'LOCKED'
         : level > 0
-          ? `RANK ${level}/${maxLevel}`
+          ? `LEVEL ${level} / ${maxLevel}`
           : 'AVAILABLE';
     const statusCls = maxed ? 'is-active' : level > 0 ? 'is-unlocked' : '';
     const shortfall =
@@ -278,74 +306,46 @@ export function renderTalentsTree(container, sanctuaryVM, payload = {}, callback
         ? ` Need ${(nextCost - luminance).toLocaleString()} more LUM.`
         : '';
 
-    const card = document.createElement('div');
-    card.className = `fork-detail-card${maxed ? ' is-active' : level > 0 ? ' is-unlocked' : ''}`;
-
-    const pipsHtml = Array.from({ length: maxLevel }, (_, idx) =>
-      `<span class="sanctuary-pip${idx < level ? ' filled' : ''}"></span>`
-    ).join('');
-
-    const currentHtml =
-      level > 0
-        ? `<div class="fork-detail-next is-current">
-            <div class="fork-detail-next-label">ACTIVE BONUS</div>
-            <div class="fork-detail-next-text">${sel.rankText(level)}</div>
-          </div>`
-        : '';
-
-    const nextHeading = maxed
-      ? 'STATUS'
-      : !prereqMet
-        ? 'REQUIREMENT'
-        : `NEXT (LEVEL ${level + 1} / ${maxLevel})`;
-    let nextBody;
+    let nextLine;
     if (maxed) {
-      nextBody = `Max Level reached · Full celestial potency active on ${groupName}.`;
+      nextLine = `Active (MAX): ${sel.rankText(maxLevel)}`;
     } else if (!prereqMet) {
-      nextBody = `Requires ${reqNode.name} Level ${needed} (${reqRank}/${needed}). Next rank: ${sel.rankText(level + 1)}.`;
+      nextLine = `Requires ${reqNode.name} LV ${needed} (${reqRank}/${needed}) · Next: ${sel.rankText(level + 1)}`;
     } else {
       const startNote =
-        sel.slot === 'root' && level === 0
-          ? ` Unlocks ${groupName} as a Start Ability.`
-          : '';
-      nextBody = `${sel.rankText(level + 1)} · Cost: ${nextCost.toLocaleString()} LUM.${startNote}${shortfall}`;
+        sel.slot === 'root' && level === 0 ? ` · Unlocks ${groupName} as Start Ability` : '';
+      nextLine = `Next (LV ${level + 1}): ${sel.rankText(level + 1)}${startNote}${shortfall}`;
     }
 
-    card.innerHTML = `
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'fork-inspector-info';
+    infoDiv.innerHTML = `
       <div class="fork-detail-head">
-        <span class="fork-detail-group">${groupName.toUpperCase()}</span>
+        <span class="fork-detail-group">✦ ${groupName.toUpperCase()}</span>
         <span class="fork-detail-status ${statusCls}">${statusText}</span>
       </div>
       <h3 class="fork-detail-title">${sel.name}</h3>
-      <div class="fork-detail-level-row">
-        <span class="fork-detail-level">Level ${level} / ${maxLevel}</span>
-        <div class="sanctuary-pips">${pipsHtml}</div>
-      </div>
       <p class="fork-detail-desc">${sel.desc}</p>
-      ${currentHtml}
-      <div class="fork-detail-next">
-        <div class="fork-detail-next-label">${nextHeading}</div>
-        <div class="fork-detail-next-text">${nextBody}</div>
-      </div>
+      <div class="fork-detail-next-line">${nextLine}</div>
     `;
 
     const actionBtn = document.createElement('button');
     actionBtn.type = 'button';
     actionBtn.className = `sanctuary-buy-btn fork-detail-action${maxed ? ' is-active' : ''}`;
     actionBtn.textContent = maxed
-      ? 'MAXED'
+      ? '★ MAXED'
       : !prereqMet
         ? `LOCKED (${reqNode.name} Lv ${needed})`
-        : `UPGRADE  ${nextCost.toLocaleString()} LUM`;
+        : `AWAKEN · ${nextCost.toLocaleString()} LUM`;
     actionBtn.disabled = !canBuy;
     if (canBuy) {
       actionBtn.addEventListener('click', () => callbacks.onTalentAction?.(sel.id));
     }
-    card.appendChild(actionBtn);
-    detailCol.appendChild(card);
+    detailCol.append(infoDiv, actionBtn);
   }
+  rightCol.appendChild(detailCol);
 
-  layout.append(groupsCol, treeCol, detailCol);
+  layout.append(groupsCol, rightCol);
   container.innerHTML = '';
   container.appendChild(layout);
 }
