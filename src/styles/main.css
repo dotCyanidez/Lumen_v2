@@ -1583,88 +1583,130 @@ body {
 }
 
 .title-quests {
-  margin-top: clamp(24px, 4.5vh, 48px);
-  margin-bottom: clamp(30px, 6.2vh, 72px);
-  width: min(100%, 600px);
+  margin-top: clamp(1rem, 3.2vh, 2rem);
+  margin-bottom: clamp(1rem, 3.6vh, 2.4rem);
+  width: min(100%, 44rem);
 }
 
 .title-quests-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: 0.75rem;
+  margin-bottom: 0.7rem;
 }
 
 .title-quests-line {
   flex: 1;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(130, 225, 235, 0.34));
+  background: linear-gradient(90deg, transparent, rgba(130, 225, 235, 0.36));
 }
 
 .title-quests-line:last-child {
-  background: linear-gradient(270deg, transparent, rgba(130, 225, 235, 0.34));
+  background: linear-gradient(270deg, transparent, rgba(130, 225, 235, 0.36));
 }
 
 .title-quests-heading {
-  font-size: 0.62rem;
+  font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.28em;
   padding-left: 0.28em;
-  color: rgba(164, 240, 238, 0.78);
+  color: rgba(164, 240, 238, 0.86);
   text-transform: uppercase;
-  text-shadow: 0 0 12px rgba(93, 247, 235, 0.26);
+  text-shadow: 0 0 14px rgba(93, 247, 235, 0.3);
   white-space: nowrap;
 }
 
 .quests-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 7px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
 }
 
 .quest-pill {
-  padding: 6px 9px;
-  border-radius: 10px;
-  background: rgba(8, 16, 36, 0.56);
-  border: 1px solid rgba(130, 225, 235, 0.14);
+  position: relative;
+  padding: 0.75rem 0.9rem;
+  border-radius: 14px;
+  background: linear-gradient(165deg, rgba(11, 22, 46, 0.76), rgba(6, 12, 28, 0.88));
+  border: 1px solid rgba(130, 225, 235, 0.22);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
   text-align: left;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0.36rem;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.quest-pill::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(130, 225, 235, 0.1);
+  pointer-events: none;
+}
+
+.quest-pill:hover {
+  border-color: rgba(130, 225, 235, 0.42);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5), 0 0 22px rgba(93, 247, 235, 0.08);
 }
 
 .quest-pill.done {
-  border-color: rgba(255, 225, 130, 0.68);
-  background: rgba(255, 220, 125, 0.12);
+  border-color: rgba(255, 220, 130, 0.62);
+  background: linear-gradient(165deg, rgba(44, 34, 16, 0.76), rgba(18, 14, 9, 0.88));
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.42), 0 0 22px rgba(255, 214, 120, 0.12);
+}
+
+.quest-pill.done::before {
+  border-color: rgba(255, 220, 130, 0.24);
 }
 
 .quest-pill-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 6px;
+  gap: 0.5rem;
 }
 
 .quest-pill-name {
-  font-size: 0.6rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
-  color: #bffef9;
+  letter-spacing: 0.12em;
+  color: #ccfefa;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quest-pill.done .quest-pill-name {
+  color: #fff2c2;
 }
 
 .quest-pill-reward {
-  font-size: 0.56rem;
+  font-size: 0.6rem;
   font-weight: 700;
+  letter-spacing: 0.06em;
   color: #ffe699;
+  padding: 0.14rem 0.46rem;
+  border-radius: 999px;
+  background: rgba(255, 214, 120, 0.12);
+  border: 1px solid rgba(255, 214, 120, 0.34);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
+.quest-pill.done .quest-pill-reward {
+  background: rgba(255, 214, 120, 0.22);
+  border-color: rgba(255, 225, 140, 0.58);
+  color: #fff4c8;
+}
+
 .quest-pill-desc {
-  font-size: 0.66rem;
-  line-height: 1.25;
-  color: rgba(215, 236, 248, 0.78);
+  font-size: 0.72rem;
+  line-height: 1.38;
+  color: rgba(215, 236, 248, 0.82);
 }
 
 /* Level-Up Ability Card Draft — Celestial Tarot Layout */
