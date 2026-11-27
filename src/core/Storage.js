@@ -56,6 +56,7 @@ const DEFAULT_DATA = {
   questCursor: 3,
   questTiers: {},
   claimedMilestones: [],
+  runHistory: [],
 };
 
 function getYesterdayDateKey() {
@@ -78,6 +79,7 @@ function createFreshSaveData() {
     activeQuests: [...DEFAULT_DATA.activeQuests],
     questTiers: {},
     claimedMilestones: [],
+    runHistory: [],
   };
 }
 
@@ -179,6 +181,9 @@ class StorageService {
       merged.claimedMilestones = Array.isArray(merged.claimedMilestones)
         ? [...new Set(merged.claimedMilestones.filter((id) => Boolean(MILESTONES_BY_ID[id])))]
         : [];
+      merged.runHistory = Array.isArray(parsed.runHistory)
+        ? parsed.runHistory.filter((r) => r && typeof r === 'object').slice(0, 12)
+        : [];
       if (!isStartAbilityUnlocked(merged.selectedStartAbility, merged.talentRanks)) {
         merged.selectedStartAbility = 'resonant_volley';
       }
@@ -237,6 +242,10 @@ class StorageService {
 
   get bestTime() {
     return this.data.bestTime;
+  }
+
+  get runHistory() {
+    return Array.isArray(this.data.runHistory) ? this.data.runHistory : [];
   }
 
   get dailyDate() {
@@ -603,6 +612,7 @@ class StorageService {
     difficultyFx = null,
     bonusLuminance = 0,
     newlyMilestones = [],
+    runSummary = null,
   }) {
     this._ensureDailyDate();
     const diffFx = difficultyFx || this.getDifficultyObj();
@@ -735,6 +745,29 @@ class StorageService {
     const newlyUnlockedSpirits = SPIRIT_ASPECTS.filter(
       (s) => s.unlockLuminance > prevLifetime && s.unlockLuminance <= this.lifetimeLuminance
     );
+
+    const historyEntry = {
+      ts: Date.now(),
+      score: cleanScore,
+      time: Math.max(0, Math.round(time || 0)),
+      mode,
+      diffId: diffFx?.id || 'normal',
+      diffName: diffFx?.name || 'Normal',
+      spiritId: runSummary?.spiritId || this.data.selectedSpirit || 'wisp',
+      spiritName: runSummary?.spiritName || 'Lumen Wisp',
+      level: Math.max(1, Math.floor(runStats.level || 1)),
+      phaseCode: runSummary?.phaseCode || '01',
+      overdriveTier: Math.max(0, Math.floor(runSummary?.overdriveTier || 0)),
+      medalId: medalInfo.achieved?.id || '',
+      medalName: medalInfo.achieved?.name || '',
+      elites: elitesCount,
+      lum: luminanceEarned,
+      abilities: Array.isArray(runSummary?.abilities) ? runSummary.abilities.slice(0, 6) : [],
+      topAbilityId: runSummary?.topAbilityId || '',
+      topAbilityShare: Math.max(0, Math.min(100, Math.round(runSummary?.topAbilityShare || 0))),
+    };
+    const prevHistory = Array.isArray(this.data.runHistory) ? this.data.runHistory : [];
+    this.data.runHistory = [historyEntry, ...prevHistory].slice(0, 12);
 
     this._save();
     return {

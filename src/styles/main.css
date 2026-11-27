@@ -3859,3 +3859,227 @@ button.loadout-chip.is-inspected {
     font-size: 0.46rem;
   }
 }
+
+/* =========================================================
+   SANCTUARY ARCHIVE (PERSONAL BESTS & RUN HISTORY)
+   ========================================================= */
+.sanctuary-archive {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.archive-bests {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.archive-best-card {
+  position: relative;
+  padding: 0.72rem 0.85rem;
+  border-radius: 12px;
+  background: linear-gradient(165deg, rgba(11, 22, 46, 0.78), rgba(6, 12, 28, 0.9));
+  border: 1px solid rgba(130, 225, 235, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  text-align: left;
+}
+
+.archive-best-card::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(130, 225, 235, 0.08);
+  pointer-events: none;
+}
+
+.archive-best-label {
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: rgba(164, 224, 238, 0.72);
+}
+
+.archive-best-val {
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #eefcff;
+}
+
+.archive-best-card.is-gold .archive-best-val {
+  color: #ffe699;
+}
+
+.archive-best-card.is-cyan .archive-best-val {
+  color: #7df9ee;
+}
+
+.archive-best-card.is-rose .archive-best-val {
+  color: #ff9cb6;
+}
+
+.archive-empty {
+  padding: 1.8rem 1.2rem;
+  border-radius: 14px;
+  border: 1px dashed rgba(130, 225, 235, 0.22);
+  background: rgba(8, 16, 36, 0.45);
+  color: rgba(200, 228, 242, 0.72);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.archive-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.52rem;
+}
+
+.archive-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(6.6rem, auto) 1fr auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 12px;
+  background: linear-gradient(165deg, rgba(10, 20, 42, 0.76), rgba(6, 11, 26, 0.88));
+  border: 1px solid rgba(130, 225, 235, 0.16);
+  text-align: left;
+}
+
+.archive-row-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.22rem;
+}
+
+.archive-score-num {
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #ffffff;
+}
+
+.archive-medal-tag {
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+  background: rgba(255, 214, 120, 0.14);
+  border: 1px solid rgba(255, 214, 120, 0.4);
+  color: #ffe699;
+}
+
+.archive-row-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  min-width: 0;
+}
+
+.archive-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.archive-tag {
+  font-size: 0.56rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 0.12rem 0.44rem;
+  border-radius: 999px;
+  background: rgba(130, 225, 235, 0.08);
+  border: 1px solid rgba(130, 225, 235, 0.18);
+  color: rgba(220, 240, 248, 0.86);
+}
+
+.archive-tag.is-spirit {
+  border-color: rgba(255, 214, 120, 0.32);
+  color: #fff2c2;
+}
+
+.archive-tag.is-cyan {
+  border-color: rgba(93, 247, 235, 0.32);
+  color: #9efff5;
+}
+
+.archive-top-dps {
+  font-size: 0.64rem;
+  color: rgba(196, 226, 242, 0.78);
+}
+
+.archive-row-build {
+  display: flex;
+  align-items: center;
+  gap: 0.32rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.archive-ab-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.18rem 0.36rem;
+  border-radius: 8px;
+  background: rgba(8, 16, 36, 0.85);
+  border: 1px solid color-mix(in srgb, var(--ab-col, #5df7eb) 38%, transparent);
+}
+
+.archive-ab-chip.is-ascended {
+  border-color: rgba(93, 247, 235, 0.65);
+}
+
+.archive-ab-chip.is-supernova {
+  border-color: rgba(255, 220, 120, 0.85);
+  box-shadow: 0 0 10px rgba(255, 214, 120, 0.24);
+}
+
+.archive-ab-ico {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ab-col, #5df7eb);
+}
+
+.archive-ab-ico svg {
+  width: 100%;
+  height: 100%;
+}
+
+.archive-ab-lv {
+  font-size: 0.56rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: rgba(235, 248, 255, 0.92);
+}
+
+.archive-when {
+  font-size: 0.58rem;
+  color: rgba(175, 210, 228, 0.62);
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .archive-bests {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .archive-row {
+    grid-template-columns: 1fr auto;
+  }
+
+  .archive-row-build {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}

@@ -36,6 +36,13 @@ const HARMONIC_BANKS = [
     { bass: 82.41, pad: [164.81, 246.94, 329.63, 392.0], arp: [329.63, 440.0, 587.33, 659.25, 783.99, 987.77] },
     { bass: 92.5, pad: [185.0, 246.94, 329.63, 369.99], arp: [369.99, 493.88, 554.37, 739.99, 880.0, 1108.73] },
   ],
+  // Bank 3: Overdrive Supernova F#m9 -> Dmaj7#11 -> Bm9 -> C#7sus4 (Overdrive+: incandescent momentum)
+  [
+    { bass: 92.5, pad: [185.0, 220.0, 277.18, 329.63], arp: [369.99, 440.0, 554.37, 659.25, 739.99, 1108.73] },
+    { bass: 73.42, pad: [146.83, 220.0, 277.18, 369.99], arp: [293.66, 440.0, 554.37, 659.25, 739.99, 1174.66] },
+    { bass: 61.74, pad: [123.47, 185.0, 293.66, 329.63], arp: [246.94, 369.99, 493.88, 587.33, 739.99, 987.77] },
+    { bass: 69.3, pad: [138.59, 207.65, 277.18, 329.63], arp: [277.18, 415.3, 493.88, 659.25, 830.61, 1108.73] },
+  ],
 ];
 
 const MUSIC_PROGRESSION = HARMONIC_BANKS[0];
@@ -71,7 +78,7 @@ export class AudioEngine {
     this.beatPulse = 0;
     this.musicFilter = null;
 
-    this.mood = { intensity: 0, paused: false, active: false, dying: false };
+    this.mood = { intensity: 0, paused: false, active: false, dying: false, overdriveTier: 0 };
     this.unlocked = false;
   }
 
@@ -97,11 +104,12 @@ export class AudioEngine {
     this._syncGains();
   }
 
-  setAmbientMood({ intensity = 0, paused = false, active = false, dying = false }) {
+  setAmbientMood({ intensity = 0, paused = false, active = false, dying = false, overdriveTier = 0 }) {
     this.mood.intensity = intensity;
     this.mood.paused = paused;
     this.mood.active = active;
     this.mood.dying = dying;
+    this.mood.overdriveTier = Math.max(0, Math.floor(overdriveTier || 0));
     this._syncGains();
   }
 
@@ -244,8 +252,9 @@ export class AudioEngine {
         this.nextStepTime = this.ctx.currentTime + 0.05;
       }
 
-      // Tempo gently accelerates slightly in intense phases (78 BPM calm -> 96 BPM intense)
-      const bpm = this.mood.active ? 78 + this.mood.intensity * 18 : 72;
+      // Tempo gently accelerates in intense phases (78 calm -> 96 Eclipse -> up to 108 Overdrive)
+      const odBoost = Math.min(12, (this.mood.overdriveTier || 0) * 1.1);
+      const bpm = this.mood.active ? 78 + this.mood.intensity * 18 + odBoost : 72;
       const eighthNote = 60 / bpm / 2;
       if (!(eighthNote > 0) || !Number.isFinite(eighthNote)) return;
 
@@ -271,7 +280,16 @@ export class AudioEngine {
 
   _scheduleMusicStep(step, time, eighthDur) {
     const intensity = this.mood.active ? this.mood.intensity : 0;
-    const bankIdx = !this.mood.active ? 0 : intensity >= 0.65 ? 2 : intensity >= 0.35 ? 1 : 0;
+    const od = this.mood.active ? this.mood.overdriveTier || 0 : 0;
+    const bankIdx = !this.mood.active
+      ? 0
+      : od >= 1
+        ? 3
+        : intensity >= 0.65
+          ? 2
+          : intensity >= 0.35
+            ? 1
+            : 0;
     const bank = HARMONIC_BANKS[bankIdx] || MUSIC_PROGRESSION;
     const chord = bank[this.chordIndex % bank.length];
     const pattern = MELODY_PATTERNS[this.patternIndex];
@@ -336,6 +354,19 @@ export class AudioEngine {
     if (this.mood.active && !paused && intensity >= 0.25 && step % 2 === 1 && (intensity > 0.5 || step % 4 === 3)) {
       const pulseFreq = chord.pad[step % 2 === 1 ? 1 : 2];
       this._playMutedPluck(pulseFreq, time, 0.28, 0.03 + intensity * 0.03, (step % 4 - 1.5) * 0.25);
+    }
+
+    // Overdrive incandescent harmonic shimmer layer (scales gently with overdriveTier)
+    if (this.mood.active && !paused && od >= 1 && (step % 4 === 2 || (od >= 6 && step % 4 === 0))) {
+      const odScale = Math.min(1, od / 10);
+      const shimmerFreq = chord.arp[(step + this.patternIndex) % chord.arp.length] * 2;
+      this._playFeltHarpNote(
+        shimmerFreq,
+        time,
+        eighthDur * 2.4,
+        0.028 + odScale * 0.024,
+        step % 4 === 2 ? 0.36 : -0.36
+      );
     }
   }
 
@@ -1027,6 +1058,122 @@ export class AudioEngine {
       g.connect(this.reverbSend);
       osc.start(t);
       osc.stop(t + 0.58);
+    });
+  }
+
+  playAscensionStinger(tier = 5) {
+    if (!this.sfxEnabled || !this.ctx) return;
+    const ctx = this.ctx;
+    const now = ctx.currentTime;
+    const isSupernova = tier >= 10;
+    const chord = isSupernova
+      ? [293.66, 440.0, 587.33, 880.0, 1174.66, 1479.98, 1760.0]
+      : [440.0, 587.33, 739.99, 1174.66, 1479.98];
+
+    // Warm sub-bass bloom for LV 10 Supernova
+    if (isSupernova) {
+      const sub = ctx.createOscillator();
+      const subG = ctx.createGain();
+      sub.type = 'sine';
+      sub.frequency.setValueAtTime(146.83, now);
+      sub.frequency.exponentialRampToValueAtTime(73.42, now + 0.75);
+      subG.gain.setValueAtTime(0.0001, now);
+      subG.gain.exponentialRampToValueAtTime(0.18, now + 0.04);
+      subG.gain.exponentialRampToValueAtTime(0.0001, now + 1.15);
+      sub.connect(subG);
+      subG.connect(this.sfxBus);
+      sub.start(now);
+      sub.stop(now + 1.2);
+    }
+
+    chord.forEach((freq, idx) => {
+      const t = now + idx * (isSupernova ? 0.045 : 0.04);
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = idx >= chord.length - 2 ? 'triangle' : 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(isSupernova ? 0.13 : 0.11, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + (isSupernova ? 1.55 : 0.95));
+      osc.connect(g);
+      this._routePanned(g, ((idx % 2 === 0 ? -1 : 1) * (0.15 + idx * 0.06)), this.sfxBus);
+      g.connect(this.reverbSend);
+      osc.start(t);
+      osc.stop(t + (isSupernova ? 1.6 : 1.0));
+    });
+  }
+
+  playSynergyUnlock() {
+    if (!this.sfxEnabled || !this.ctx) return;
+    const ctx = this.ctx;
+    const now = ctx.currentTime;
+    // Two opposing panned voices weaving into a unified major-9th chord
+    const leftVoice = [440.0, 587.33, 880.0];
+    const rightVoice = [659.25, 739.99, 1318.51];
+    [
+      { notes: leftVoice, pan: -0.5 },
+      { notes: rightVoice, pan: 0.5 },
+    ].forEach(({ notes, pan }) => {
+      notes.forEach((freq, idx) => {
+        const t = now + idx * 0.065;
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = idx === 2 ? 'triangle' : 'sine';
+        osc.frequency.setValueAtTime(freq, t);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.11, t + 0.018);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.95);
+        osc.connect(g);
+        this._routePanned(g, idx === 2 ? pan * 0.3 : pan, this.sfxBus);
+        g.connect(this.reverbSend);
+        osc.start(t);
+        osc.stop(t + 1.0);
+      });
+    });
+  }
+
+  playVoidParryResonance() {
+    if (!this.sfxEnabled || !this.ctx) return;
+    const ctx = this.ctx;
+    const now = ctx.currentTime;
+
+    // Brief tactile music lowpass dip (slow-mo parry resonance feel)
+    if (this.musicFilter && !this.mood.paused) {
+      const targetFreq = this.mood.active ? 8800 : 4800;
+      this.musicFilter.frequency.cancelScheduledValues(now);
+      this.musicFilter.frequency.setValueAtTime(620, now);
+      this.musicFilter.frequency.exponentialRampToValueAtTime(targetFreq, now + 0.32);
+    }
+
+    // Deep resonant sub-impact
+    const sub = ctx.createOscillator();
+    const subG = ctx.createGain();
+    sub.type = 'sine';
+    sub.frequency.setValueAtTime(145, now);
+    sub.frequency.exponentialRampToValueAtTime(48, now + 0.24);
+    subG.gain.setValueAtTime(0.0001, now);
+    subG.gain.exponentialRampToValueAtTime(0.22, now + 0.01);
+    subG.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+    sub.connect(subG);
+    subG.connect(this.sfxBus);
+    sub.start(now);
+    sub.stop(now + 0.3);
+
+    // Bright crystalline harmonic ring
+    [1174.66, 1760.0, 2349.32].forEach((freq, idx) => {
+      const t = now + idx * 0.022;
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = idx === 0 ? 'triangle' : 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.11 - idx * 0.02, t + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.65);
+      osc.connect(g);
+      g.connect(this.sfxBus);
+      g.connect(this.reverbSend);
+      osc.start(t);
+      osc.stop(t + 0.7);
     });
   }
 }

@@ -436,6 +436,10 @@ export function renderSanctuary(elements, sanctuaryVM, payload = {}, callbacks =
     talentRanks = {},
     unlockedTrails = ['mist'],
     unlockedPalettes = ['default'],
+    highScore = 0,
+    bestTime = 0,
+    totalElitesDefeated = 0,
+    runHistory = [],
   } = payload;
 
   sanctuaryVM.luminance.value = luminance;
@@ -543,6 +547,135 @@ export function renderSanctuary(elements, sanctuaryVM, payload = {}, callbacks =
       );
     }
   }
+
+  if (elements.archiveEl) {
+    renderArchivePane(elements.archiveEl, {
+      highScore,
+      bestTime,
+      totalElitesDefeated,
+      lifetimeLuminance,
+      runHistory,
+    });
+  }
+}
+
+function formatArchiveTime(sec = 0) {
+  const s = Math.max(0, Math.floor(sec));
+  const m = Math.floor(s / 60);
+  const rem = s % 60;
+  return `${m}:${String(rem).padStart(2, '0')}`;
+}
+
+function formatArchiveWhen(ts) {
+  if (!ts) return '';
+  const diffSec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+  if (diffSec < 60) return 'Just now';
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`;
+  const d = new Date(ts);
+  return `${d.toLocaleString('en-US', { month: 'short' })} ${d.getDate()}`;
+}
+
+function renderArchivePane(
+  container,
+  { highScore = 0, bestTime = 0, totalElitesDefeated = 0, lifetimeLuminance = 0, runHistory = [] }
+) {
+  container.innerHTML = '';
+
+  const bestsGrid = document.createElement('div');
+  bestsGrid.className = 'archive-bests';
+  const bestItems = [
+    { label: 'HIGH SCORE', value: Math.floor(highScore).toLocaleString(), tone: 'gold' },
+    { label: 'LONGEST RUN', value: formatArchiveTime(bestTime), tone: 'cyan' },
+    { label: 'ELITES PURGED', value: Math.floor(totalElitesDefeated).toLocaleString(), tone: 'rose' },
+    { label: 'LIFETIME LUM', value: Math.floor(lifetimeLuminance).toLocaleString(), tone: 'gold' },
+  ];
+  for (const item of bestItems) {
+    const card = document.createElement('div');
+    card.className = `archive-best-card is-${item.tone}`;
+    card.innerHTML = `<span class="archive-best-label">${item.label}</span><strong class="archive-best-val">${item.value}</strong>`;
+    bestsGrid.appendChild(card);
+  }
+  container.appendChild(bestsGrid);
+
+  const subhead = document.createElement('div');
+  subhead.className = 'sanctuary-subhead';
+  subhead.textContent = `✦ RECENT RUNS (${runHistory.length}/12)`;
+  container.appendChild(subhead);
+
+  if (!runHistory.length) {
+    const empty = document.createElement('div');
+    empty.className = 'archive-empty';
+    empty.textContent = 'Complete a run to archive your score, build loadout, and top DPS ability here.';
+    container.appendChild(empty);
+    return;
+  }
+
+  const list = document.createElement('div');
+  list.className = 'archive-list';
+
+  for (const run of runHistory) {
+    const row = document.createElement('div');
+    row.className = 'archive-row';
+
+    const left = document.createElement('div');
+    left.className = 'archive-row-score';
+    const scoreEl = document.createElement('strong');
+    scoreEl.className = 'archive-score-num';
+    scoreEl.textContent = Math.floor(run.score || 0).toLocaleString();
+    left.appendChild(scoreEl);
+    if (run.medalName) {
+      const medal = document.createElement('span');
+      medal.className = 'archive-medal-tag';
+      medal.textContent = run.medalName.toUpperCase();
+      left.appendChild(medal);
+    }
+
+    const mid = document.createElement('div');
+    mid.className = 'archive-row-meta';
+    const tags = document.createElement('div');
+    tags.className = 'archive-tags';
+    const modeLabel = (run.mode || 'arcade').toUpperCase();
+    const diffLabel = (run.diffName || 'Normal').toUpperCase();
+    const odTag = run.overdriveTier > 0 ? `OD+${run.overdriveTier}` : `PH ${run.phaseCode || '01'}`;
+    tags.innerHTML = `
+      <span class="archive-tag is-spirit">${run.spiritName || 'Lumen Wisp'}</span>
+      <span class="archive-tag">${modeLabel} · ${diffLabel}</span>
+      <span class="archive-tag is-cyan">${formatArchiveTime(run.time)} · ${odTag} · LV ${run.level || 1}</span>
+    `;
+    mid.appendChild(tags);
+
+    if (run.topAbilityId) {
+      const topInfo = getAbilityInfo(run.topAbilityId);
+      const topLine = document.createElement('div');
+      topLine.className = 'archive-top-dps';
+      topLine.textContent = `Top DPS: ${topInfo?.name || run.topAbilityId}${run.topAbilityShare ? ` (${run.topAbilityShare}%)` : ''} · +${(run.lum || 0).toLocaleString()} LUM`;
+      mid.appendChild(topLine);
+    }
+
+    const build = document.createElement('div');
+    build.className = 'archive-row-build';
+    const abilities = Array.isArray(run.abilities) ? run.abilities : [];
+    for (const [abId, rank] of abilities) {
+      const info = getAbilityInfo(abId);
+      const chip = document.createElement('span');
+      chip.className = `archive-ab-chip${rank >= 10 ? ' is-supernova' : rank >= 5 ? ' is-ascended' : ''}`;
+      chip.title = `${info?.name || abId} · LV ${rank}`;
+      const col = hexToCss(info?.colorHex || 0x5df7eb);
+      chip.style.setProperty('--ab-col', col);
+      chip.innerHTML = `<span class="archive-ab-ico">${ABILITY_ICONS[abId] || ''}</span><span class="archive-ab-lv">${rank}</span>`;
+      build.appendChild(chip);
+    }
+
+    const when = document.createElement('span');
+    when.className = 'archive-when';
+    when.textContent = formatArchiveWhen(run.ts);
+
+    row.append(left, mid, build, when);
+    list.appendChild(row);
+  }
+
+  container.appendChild(list);
 }
 
 export class SanctuaryModalView {
@@ -555,7 +688,7 @@ export class SanctuaryModalView {
       this.elements.panelEl?.classList.toggle('is-tree-mode', activeTab === 'talents');
       this.elements.panelEl?.classList.toggle(
         'is-looks-mode',
-        activeTab === 'looks' || activeTab === 'spirits'
+        activeTab === 'looks' || activeTab === 'spirits' || activeTab === 'archive'
       );
       for (const btn of this.elements.tabs || []) {
         btn.classList.toggle('active', btn.dataset.tab === activeTab);

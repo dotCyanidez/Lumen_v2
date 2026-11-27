@@ -370,6 +370,9 @@ export class LumenGame {
       activeQuests: storage.getActiveQuestObjects(),
       gameMode: storage.gameMode,
       difficulty: storage.difficulty,
+      bestTime: storage.bestTime,
+      totalElitesDefeated: storage.data.totalElitesDefeated || 0,
+      runHistory: storage.runHistory,
     };
   }
 
@@ -870,6 +873,7 @@ export class LumenGame {
       intensity: this.currentPhaseIndex / (PHASES.length - 1),
       paused: false,
       active: true,
+      overdriveTier: this.overdriveTier,
     });
     this.ui.setGameState(GAME_STATES.PLAYING);
     if (this.app?.ticker && !this.app.ticker.started) {
@@ -1213,7 +1217,7 @@ export class LumenGame {
     this._addExp(20);
     this.shardLuminance += 10;
     this.player.addDashEnergy(0.75);
-    this.audio.playIgnitionChime();
+    this.audio.playVoidParryResonance();
     this.particles.emitPrismBurst(cx, cy);
     this._triggerShockwave(cx, cy, 0.72);
     this._callout(
@@ -1265,7 +1269,7 @@ export class LumenGame {
     this.activeSynergySet = new Set(this.activeSynergies.map((s) => s.id));
     for (const s of this.activeSynergies) {
       if (!prevIds.has(s.id)) {
-        this.audio.playIgnitionChime();
+        this.audio.playSynergyUnlock();
         this._triggerShockwave(this.player.x, this.player.y, 0.78);
         this._callout(
           this.player.x,
@@ -1679,6 +1683,7 @@ export class LumenGame {
       );
       if (evo) {
         const tag = nextRank === 10 ? '✦ SUPERNOVA' : '★ ASCENDED';
+        this.audio.playAscensionStinger(nextRank);
         this._callout(this.player.x, this.player.y - 58, `${tag}: ${evo.name.toUpperCase()}!`, '#9efff5', 1.15);
       }
       if (nextRank >= 10) {
@@ -1695,6 +1700,7 @@ export class LumenGame {
         intensity: this.currentPhaseIndex / (PHASES.length - 1),
         paused: false,
         active: true,
+        overdriveTier: this.overdriveTier,
       });
     }
   }
@@ -1895,6 +1901,10 @@ export class LumenGame {
       score: finalScore,
     };
 
+    const phase = PHASES[this.currentPhaseIndex];
+    const damageReport = this.abilities.getDamageReport();
+    const topEntry = damageReport?.entries?.[0] || null;
+    const totalDmg = damageReport?.totalDamage || 0;
     const result = storage.recordRun({
       score: finalScore,
       time: this.survivalTime,
@@ -1903,9 +1913,16 @@ export class LumenGame {
       difficultyFx: this.activeDifficulty,
       bonusLuminance: this.shardLuminance,
       newlyMilestones: this.runMilestonesTriggered,
+      runSummary: {
+        spiritId: this.activeSpirit.id,
+        spiritName: this.activeSpirit.name,
+        phaseCode: phase.code,
+        overdriveTier: this.overdriveTier,
+        abilities: Array.from(this.abilityRanks.entries()).sort((a, b) => b[1] - a[1]),
+        topAbilityId: topEntry?.id || '',
+        topAbilityShare: topEntry && totalDmg > 0 ? Math.round((topEntry.damage / totalDmg) * 100) : 0,
+      },
     });
-
-    const phase = PHASES[this.currentPhaseIndex];
     this.ui.setGameState(GAME_STATES.GAMEOVER, {
       score: finalScore,
       highScore: storage.highScore,
@@ -2080,11 +2097,21 @@ export class LumenGame {
 
     // Endless Overdrive escalation beyond Phase 5 (time-gated so score spikes cannot jump tiers early)
     if (this.currentPhaseIndex === PHASES.length - 1 && this.survivalTime >= 100) {
+      const prevOd = this.overdriveTier;
       this.overdriveTier = WaveDirectorService.computeOverdriveTier(
         this.currentPhaseIndex,
         this.survivalTime,
         this.score
       );
+      if (this.overdriveTier > prevOd) {
+        this.audio.setAmbientMood({
+          intensity: 1,
+          paused: false,
+          active: true,
+          dying: false,
+          overdriveTier: this.overdriveTier,
+        });
+      }
       while (this.overdriveTier >= this.nextOverdriveWave) {
         const waveDef = OVERDRIVE_WAVES[(this.nextOverdriveWave - 1) % OVERDRIVE_WAVES.length];
         this.ui.showPhaseBanner({

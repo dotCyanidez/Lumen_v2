@@ -104,12 +104,14 @@ export class UIManager {
     this.sanctuaryTrailsEl = document.getElementById('sanctuary-trails-list');
     this.sanctuaryPalettesEl = document.getElementById('sanctuary-palettes-list');
     this.sanctuarySpiritsEl = document.getElementById('sanctuary-spirits-list');
+    this.sanctuaryArchiveEl = document.getElementById('sanctuary-archive-list');
     this.sanctuaryTabs = Array.from(document.querySelectorAll('.sanctuary-tab'));
     this.sanctuaryPanes = {
       upgrades: document.getElementById('sanctuary-tab-upgrades'),
       talents: document.getElementById('sanctuary-tab-talents'),
       looks: document.getElementById('sanctuary-tab-looks'),
       spirits: document.getElementById('sanctuary-tab-spirits'),
+      archive: document.getElementById('sanctuary-tab-archive'),
     };
     this.sanctuaryPanelEl = document.querySelector('#screen-sanctuary .sanctuary-panel');
 
@@ -225,6 +227,7 @@ export class UIManager {
         trailsEl: this.sanctuaryTrailsEl,
         palettesEl: this.sanctuaryPalettesEl,
         spiritsEl: this.sanctuarySpiritsEl,
+        archiveEl: this.sanctuaryArchiveEl,
         tabs: this.sanctuaryTabs,
         panes: this.sanctuaryPanes,
       },
