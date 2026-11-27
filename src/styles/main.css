@@ -2345,7 +2345,7 @@ button.loadout-chip.is-inspected {
 
 /* Sanctuary Modal */
 .sanctuary-panel {
-  width: min(95vw, 62rem);
+  width: min(92vw, 52rem);
   max-height: 92vh;
   display: flex;
   flex-direction: column;
@@ -2354,7 +2354,7 @@ button.loadout-chip.is-inspected {
 }
 
 .sanctuary-panel.is-tree-mode {
-  width: min(96vw, 74rem);
+  width: min(94vw, 66rem);
 }
 
 .sanctuary-panel.is-tree-mode .sanctuary-body {
@@ -2421,22 +2421,22 @@ button.loadout-chip.is-inspected {
 
 .sanctuary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10px;
-  margin-bottom: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.72rem;
+  margin-bottom: 0.72rem;
 }
 
 .sanctuary-grid-2 {
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .sanctuary-item {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 8px;
-  padding: 12px 13px;
-  border-radius: 14px;
+  gap: 0.55rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.9rem;
   background: rgba(7, 14, 32, 0.72);
   border: 1px solid rgba(130, 225, 235, 0.2);
   text-align: left;
@@ -2468,13 +2468,13 @@ button.loadout-chip.is-inspected {
 }
 
 .sanctuary-item-name {
-  font-size: 0.84rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: #f3fcff;
 }
 
 .sanctuary-item-badge {
-  font-size: 0.58rem;
+  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   color: #ffe699;
