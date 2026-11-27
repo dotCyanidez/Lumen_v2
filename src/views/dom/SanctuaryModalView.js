@@ -76,6 +76,30 @@ function buildPalettePreviewHtml(colorHex, accentHex) {
   `;
 }
 
+function buildSpiritPreviewHtml(sp) {
+  const c1 = hexToCss(sp.colorHex || 0x5ff7eb);
+  const c2 = hexToCss(sp.accentHex || sp.colorHex || 0xffe699);
+  const dashDots = Array.from(
+    { length: sp.dashCharges || 2 },
+    () => `<span class="look-spirit-dash-dot"></span>`
+  ).join('');
+  return `
+    <div class="look-preview look-preview--spirit" style="--pal-a:${c1};--pal-b:${c2}">
+      ${TAROT_ASTROLABE_SVG.replace('blessing-astrolabe', 'look-spirit-astrolabe')}
+      <div class="look-orb-ring"></div>
+      <div class="look-orb-core"></div>
+      <div class="look-spirit-dashes" title="${sp.dashCharges || 2} Solar Dashes">${dashDots}</div>
+      <div class="look-palette-bar"></div>
+    </div>
+    <div class="spirit-mini-stats">
+      <span><b>${sp.maxHealth}</b> HP</span>
+      <span><b>${sp.dashCharges}</b> Dash</span>
+      <span><b>${Math.round((sp.speedMul || 1) * 100)}%</b> Spd</span>
+      <span><b>${Math.round((sp.magnetMul || 1) * 100)}%</b> Mag</span>
+    </div>
+  `;
+}
+
 export function makeSanctuaryCard({
   title,
   desc,
@@ -510,8 +534,8 @@ export function renderSanctuary(elements, sanctuaryVM, payload = {}, callbacks =
           title: sp.name,
           desc: sp.desc,
           badge: sp.tag,
-          swatches: [sp.colorHex, sp.accentHex || sp.colorHex],
-          btnText: equipped ? 'EQUIPPED' : unlocked ? 'EQUIP' : `🔒 ${sp.unlockLuminance} LIFE`,
+          visualHtml: buildSpiritPreviewHtml(sp),
+          btnText: equipped ? '✦ EQUIPPED' : unlocked ? 'EQUIP' : `🔒 ${sp.unlockLuminance} LIFE`,
           disabled: equipped || !unlocked,
           equipped,
           onAction: () => callbacks.onSelectSpirit?.(sp.id),
@@ -529,7 +553,10 @@ export class SanctuaryModalView {
 
     this.vm.activeTab.subscribe((activeTab) => {
       this.elements.panelEl?.classList.toggle('is-tree-mode', activeTab === 'talents');
-      this.elements.panelEl?.classList.toggle('is-looks-mode', activeTab === 'looks');
+      this.elements.panelEl?.classList.toggle(
+        'is-looks-mode',
+        activeTab === 'looks' || activeTab === 'spirits'
+      );
       for (const btn of this.elements.tabs || []) {
         btn.classList.toggle('active', btn.dataset.tab === activeTab);
       }

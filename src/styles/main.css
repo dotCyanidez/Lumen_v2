@@ -2496,6 +2496,51 @@ button.loadout-chip.is-inspected {
   background: linear-gradient(90deg, var(--pal-a), var(--pal-b));
 }
 
+.look-preview--spirit {
+  height: 6.2rem;
+  background: radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--pal-a) 28%, transparent), rgba(4, 9, 22, 0.96) 74%);
+}
+
+.look-spirit-astrolabe {
+  position: absolute;
+  width: 5.4rem;
+  height: 5.4rem;
+  color: var(--pal-a);
+  opacity: 0.34;
+  animation: tarotSpinSlow 28s linear infinite;
+}
+
+.look-spirit-dashes {
+  position: absolute;
+  bottom: 0.55rem;
+  display: flex;
+  gap: 0.3rem;
+}
+
+.look-spirit-dash-dot {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: var(--pal-b);
+  box-shadow: 0 0 8px var(--pal-b);
+}
+
+.spirit-mini-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.25rem 0.4rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: 0.5rem;
+  background: rgba(4, 10, 24, 0.65);
+  border: 1px solid rgba(118, 224, 238, 0.12);
+  font-size: 0.66rem;
+  color: rgba(196, 228, 244, 0.78);
+}
+
+.spirit-mini-stats b {
+  color: #f4fdff;
+}
+
 .sanctuary-item {
   display: flex;
   flex-direction: column;
