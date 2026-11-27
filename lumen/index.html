@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#050814" />
+    <title>LUMEN — Bioluminescent Arcade</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23050a19'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%235df7eb' opacity='.22'/%3E%3Cpath d='M32 10 L40 24 L54 32 L40 40 L32 54 L24 40 L10 32 L24 24 Z' fill='%23ffffff'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" crossorigin src="./assets/index-C4y2bC3g.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/CanvasPool-DQSZBxHu.js">
+    <link rel="modulepreload" crossorigin href="./assets/canvasUtils-7QIGaAgM.js">
+    <link rel="modulepreload" crossorigin href="./assets/RenderTargetSystem-DQSvvXe_.js">
+    <link rel="modulepreload" crossorigin href="./assets/getTextureBatchBindGroup-C4I2IA-a.js">
+    <link rel="modulepreload" crossorigin href="./assets/getTexelRangeRects-BPGwi4gP.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-DvcxH3fU.css">
+  </head>
+  <body>
+    <div id="game-root">
+      <div id="canvas-host" aria-label="Lumen game canvas"></div>
+
+      <!-- Subtle screen vignette & phase announcement banner -->
+      <div id="ui-layer">
+        <!-- Live Gameplay HUD -->
+        <header id="hud" class="hud hidden" aria-hidden="true">
+          <div class="hud-left">
+            <div class="hud-group" aria-label="Spirit HP">
+              <div class="hud-label-row">
+                <span class="hud-label">HP</span>
+                <span id="hud-hp-text" class="hud-hp-text">100 / 100</span>
+              </div>
+              <div
+                id="hud-hp-bar"
+                class="hud-hp-bar"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="100"
+              >
+                <div id="hud-hp-fill" class="hud-hp-fill"></div>
+              </div>
+              <div id="hud-shield-wrap" class="hud-shield-wrap hidden" aria-label="Starlight Shield">
+                <div class="hud-label-row">
+                  <span class="hud-label">SHIELD</span>
+                  <span id="hud-shield-text" class="hud-shield-text">0 / 0</span>
+                </div>
+                <div id="hud-shield-bar" class="hud-shield-bar">
+                  <div id="hud-shield-fill" class="hud-shield-fill"></div>
+                </div>
+              </div>
+            </div>
+            <div class="hud-group" aria-label="Solar dash charges">
+              <span class="hud-label">SOLAR DASH</span>
+              <div id="hud-dashes" class="dash-row"></div>
+            </div>
+            <div id="hud-loadout" class="loadout-strip loadout-strip--hud hidden" aria-label="Equipped abilities"></div>
+          </div>
+
+          <div class="hud-center">
+            <div id="hud-mode-row" class="hud-mode-row hidden">
+              <span id="hud-mode-tag" class="hud-mode-tag">ARCADE</span>
+            </div>
+            <div id="hud-score" class="score-value">0</div>
+            <div id="hud-exp-wrap" class="hud-exp-wrap" aria-label="Level and EXP">
+              <div id="hud-exp-bar" class="hud-exp-bar">
+                <div id="hud-exp-fill" class="hud-exp-fill"></div>
+              </div>
+              <span id="hud-level" class="hud-level-badge">LV 1</span>
+            </div>
+            <div id="hud-phase" class="phase-tag">01 · FIRST SPARK</div>
+          </div>
+
+          <div class="hud-right">
+            <button
+              id="btn-hud-mixer"
+              class="icon-btn mobile-mixer-btn"
+              type="button"
+              title="Audio Volume"
+              aria-label="Audio Volume"
+            ></button>
+            <button
+              id="btn-hud-pause"
+              class="icon-btn"
+              type="button"
+              title="Pause (P / Esc)"
+              aria-label="Pause Game"
+            ></button>
+            <div id="hud-mixer-popover" class="hud-mixer-popover hidden" role="dialog" aria-label="Audio Mixer">
+              <label class="slider-row">
+                <span class="slider-row-head"><span>SFX</span><strong id="val-hud-sfx">85%</strong></span>
+                <input
+                  id="slider-pop-sfx"
+                  class="lumen-slider"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="85"
+                  aria-label="SFX Volume"
+                />
+              </label>
+              <label class="slider-row">
+                <span class="slider-row-head"><span>MUSIC</span><strong id="val-hud-ambient">75%</strong></span>
+                <input
+                  id="slider-pop-ambient"
+                  class="lumen-slider"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="75"
+                  aria-label="Music Volume"
+                />
+              </label>
+            </div>
+          </div>
+        </header>
+
+        <!-- Non-blocking diegetic tutorial hint strip -->
+        <div id="tutorial-toast" class="tutorial-toast hidden" aria-live="polite">
+          <span id="tutorial-badge" class="tutorial-step">STEP 1/3</span>
+          <span id="tutorial-text" class="tutorial-text"></span>
+        </div>
+
+        <!-- World Phase Announcement Banner -->
+        <div id="phase-banner" class="phase-banner hidden" aria-live="polite">
+          <div id="phase-banner-sub" class="phase-banner-sub">RESONANCE RISES</div>
+          <div id="phase-banner-title" class="phase-banner-title">DEEP CURRENTS</div>
+        </div>
+
+        <!-- Touch Dash Trigger (shown automatically when touch input is used or coarse pointer) -->
+        <button
+          id="touch-dash-btn"
+          class="touch-dash-btn hidden"
+          type="button"
+          aria-label="Solar Dash"
+        >
+          <span class="touch-dash-ring"></span>
+          <span class="touch-dash-label">DASH</span>
+        </button>
+
+        <!-- In-Run Dev Controls (only visible with ?dev=1) -->
+        <div id="hud-dev-actions" class="hud-dev-actions hidden" aria-label="In-Run Dev Controls">
+          <button
+            id="btn-dev-skip-60"
+            class="title-dev-btn title-dev-btn--money"
+            type="button"
+            title="Skip +60s and scale Phase, Overdrive, and build level"
+          >
+            +60s
+          </button>
+          <button
+            id="btn-dev-spawn-core"
+            class="title-dev-btn title-dev-btn--reset"
+            type="button"
+            title="Spawn Eclipse Core at current Overdrive tier"
+          >
+            CORE
+          </button>
+        </div>
+
+        <!-- Corner Minimap (shown during active runs) -->
+        <div id="hud-minimap" class="hud-minimap hidden" aria-hidden="true">
+          <canvas id="hud-minimap-canvas" width="308" height="220"></canvas>
+          <span class="hud-minimap-label">ABYSS MAP</span>
+        </div>
+
+        <!-- TITLE SCREEN -->
+        <section id="screen-title" class="overlay-screen active">
+          <div class="title-dev-actions hidden" aria-label="Temporary Dev Controls">
+            <button
+              id="btn-dev-reset"
+              class="title-dev-btn title-dev-btn--reset"
+              type="button"
+              title="Reset all progress back to zero"
+            >
+              DEV
+            </button>
+            <button
+              id="btn-dev-money"
+              class="title-dev-btn title-dev-btn--money"
+              type="button"
+              title="Add 100,000 LUM"
+            >
+              MONEY
+            </button>
+          </div>
+          <div class="title-card">
+            <div class="title-hero">
+              <h1 class="game-title" data-text="LUMEN">LUMEN</h1>
+              <div class="eyebrow">
+                <span class="eyebrow-dot"></span>
+                A BIOLUMINESCENT ARCADE ODYSSEY
+                <span class="eyebrow-dot"></span>
+              </div>
+
+              <div class="title-records-row">
+                <div id="title-highscore-pill" class="record-pill hidden">
+                  <span class="record-label">RECORD</span>
+                  <span id="title-highscore-value" class="record-value">0</span>
+                </div>
+                <div id="title-daily-pill" class="record-pill record-pill-daily hidden">
+                  <span class="record-label">DAILY TIDE</span>
+                  <span id="title-daily-value" class="record-value">0</span>
+                </div>
+                <div id="title-luminance-pill" class="record-pill record-pill-lum">
+                  <span class="record-label">LUMINANCE</span>
+                  <span id="title-luminance-value" class="record-value">0</span>
+                </div>
+                <div id="title-streak-pill" class="record-pill record-pill-streak hidden">
+                  <span class="record-label">STREAK</span>
+                  <span id="title-streak-value" class="record-value">1D</span>
+                </div>
+                <div id="title-medal-pill" class="record-pill record-pill-medal hidden">
+                  <span class="record-label">MEDAL</span>
+                  <span id="title-medal-value" class="record-value">SPARK</span>
+                </div>
+              </div>
+
+              <div class="title-setup-wrap">
+                <div class="title-setup-row" role="group" aria-label="Mode and Difficulty">
+                  <div class="setup-pill-group">
+                    <button id="btn-mode-arcade" class="setup-pill active" type="button" data-mode="arcade">
+                      ARCADE
+                    </button>
+                    <button id="btn-mode-daily" class="setup-pill" type="button" data-mode="daily">
+                      DAILY
+                      <span id="title-daily-2x-badge" class="pill-2x-badge hidden">2× LUM</span>
+                    </button>
+                    <button id="btn-mode-zen" class="setup-pill" type="button" data-mode="zen">
+                      ZEN
+                    </button>
+                  </div>
+                  <div class="setup-pill-group">
+                    <button class="setup-pill active" type="button" data-diff="normal">
+                      NORMAL
+                    </button>
+                    <button class="setup-pill" type="button" data-diff="hard">
+                      HARD
+                    </button>
+                    <button class="setup-pill" type="button" data-diff="nightmare">
+                      NIGHTMARE
+                    </button>
+                  </div>
+                </div>
+                <div id="title-run-note" class="title-run-note hidden"></div>
+              </div>
+
+              <div class="title-actions">
+                <div class="title-actions-primary">
+                  <button id="btn-play" class="primary-btn" type="button">
+                    <span class="btn-glow"></span>
+                    <span class="btn-label">ENTER THE SANCTUARY</span>
+                  </button>
+                </div>
+                <div class="title-actions-secondary">
+                  <button id="btn-title-sanctuary" class="title-link-btn with-icon" type="button">
+                    <span>SANCTUARY</span>
+                    <span id="sanctuary-afford-dot" class="afford-dot hidden" aria-hidden="true"></span>
+                  </button>
+                  <span class="title-actions-divider" aria-hidden="true"></span>
+                  <button id="btn-guide" class="title-link-btn" type="button">HOW TO PLAY</button>
+                  <span class="title-actions-divider" aria-hidden="true"></span>
+                  <button id="btn-title-settings" class="title-link-btn" type="button">SETTINGS</button>
+                </div>
+              </div>
+            </div>
+
+            <div id="title-quests" class="title-quests">
+              <div class="title-quests-header">
+                <span class="title-quests-line" aria-hidden="true"></span>
+                <span class="title-quests-heading">CHALLENGES</span>
+                <span class="title-quests-line" aria-hidden="true"></span>
+              </div>
+              <div id="title-quests-list" class="quests-row"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- HOW TO PLAY MODAL -->
+        <section id="screen-guide" class="overlay-screen hidden" aria-hidden="true">
+          <div class="glass-panel guide-panel">
+            <div class="panel-eyebrow">SANCTUARY CODEX</div>
+            <h2 class="panel-title">Weave Through Light &amp; Shadow</h2>
+
+            <div class="guide-grid">
+              <div class="guide-item">
+                <div class="guide-icon guide-icon-cyan">✦</div>
+                <h3>Abilities, Ascensions &amp; Synergies</h3>
+                <p>
+                  Equip up to <strong>6 automatic abilities</strong>. Level up to draft
+                  <strong>Tarot Ability Cards</strong> (Common → Epic), unlock
+                  <strong>LV 5 / LV 10 Supernova Ascensions</strong> and
+                  <strong>LV 3+3 Synergies</strong>, or use <strong>Reroll</strong> &amp;
+                  <strong>Void Banish</strong> to shape your build.
+                </p>
+              </div>
+              <div class="guide-item">
+                <div class="guide-icon guide-icon-gold">◈</div>
+                <h3>Solar Dash &amp; Void Parry</h3>
+                <p>
+                  Press <strong>Space</strong>, <strong>Shift</strong>, <strong>Right-Click</strong>,
+                  or tap <strong>DASH</strong> to streak invulnerably through danger. Dash across an
+                  <strong>Eclipse Core</strong> shockwave ring (<strong>Void Parry</strong>) or
+                  through the Core to crack <strong>1 full shield petal</strong>.
+                </p>
+              </div>
+              <div class="guide-item">
+                <div class="guide-icon guide-icon-crimson">✧</div>
+                <h3>Hazards, Elites &amp; Overdrive</h3>
+                <p>
+                  <strong>Lancers</strong> are <strong>invulnerable railgun hazards</strong> — read
+                  their crimson line and dodge! Defeat <strong>Elites</strong> (Harbinger &amp;
+                  Dreadnought) for bonus cards; past <strong>Overdrive +10</strong>,
+                  <strong>Twin Elites</strong> converge as enemy HP &amp; damage scale exponentially.
+                </p>
+              </div>
+              <div class="guide-item">
+                <div class="guide-icon guide-icon-cyan">★</div>
+                <h3>The Sanctuary &amp; Constellations</h3>
+                <p>
+                  Earn <strong>Luminance (LUM)</strong> from runs, Challenges, and Overdrive Shards
+                  (or pause and click <strong>End Run</strong> to bank progress). Spend LUM in
+                  <strong>The Sanctuary</strong> on Core Upgrades, <strong>Constellation Talent Trees</strong>
+                  (unlocking Start Abilities), Trails, Palettes, and <strong>Spirit Aspects</strong>.
+                </p>
+              </div>
+            </div>
+
+            <div class="controls-strip guide-controls">
+              <div class="control-chip">
+                <span class="chip-key">WASD / ARROWS / DRAG</span>
+                <span class="chip-desc">Glide (Hover option in Settings)</span>
+              </div>
+              <div class="control-chip">
+                <span class="chip-key">SPACE / SHIFT / R-CLICK</span>
+                <span class="chip-desc">Solar Dash · Void Parry</span>
+              </div>
+              <div class="control-chip">
+                <span class="chip-key">1 / 2 / 3 · P · M · R</span>
+                <span class="chip-desc">Draft Card · Pause · Mute · Retry</span>
+              </div>
+            </div>
+
+            <div class="panel-actions">
+              <button id="btn-guide-close" class="primary-btn compact" type="button">
+                <span class="btn-glow"></span>
+                <span class="btn-label">RETURN</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- SETTINGS MODAL -->
+        <section id="screen-settings" class="overlay-screen hidden" aria-hidden="true">
+          <div class="glass-panel settings-panel">
+            <div class="panel-eyebrow">SANCTUARY PREFERENCES</div>
+            <h2 class="panel-title">Settings</h2>
+
+            <div class="settings-sections">
+              <div class="settings-group">
+                <div class="settings-group-title">AUDIO</div>
+                <div class="audio-sliders-row settings-sliders">
+                  <label class="slider-row slider-row-pill">
+                    <span class="slider-row-head"><span>SFX</span><strong id="val-settings-sfx">85%</strong></span>
+                    <input
+                      id="slider-settings-sfx"
+                      class="lumen-slider"
+                      type="range"
+                      min="0"
+                      max="100"
+                      value="85"
+                      aria-label="SFX Volume"
+                    />
+                  </label>
+                  <label class="slider-row slider-row-pill">
+                    <span class="slider-row-head"><span>MUSIC</span><strong id="val-settings-ambient">75%</strong></span>
+                    <input
+                      id="slider-settings-ambient"
+                      class="lumen-slider"
+                      type="range"
+                      min="0"
+                      max="100"
+                      value="75"
+                      aria-label="Music Volume"
+                    />
+                  </label>
+                </div>
+                <div class="settings-toggle-row">
+                  <button
+                    id="btn-settings-mute"
+                    class="toggle-pill"
+                    type="button"
+                    title="Mute or unmute all audio (M)"
+                  >
+                    <span class="pill-indicator"></span>
+                    <span id="label-settings-mute">MUTE ALL (M): OFF</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="settings-group">
+                <div class="settings-group-title">VISUALS &amp; BLOOM</div>
+                <label class="slider-row slider-row-pill">
+                  <span class="slider-row-head"><span>BLOOM GLOW</span><strong id="val-settings-bloom">65%</strong></span>
+                  <input
+                    id="slider-settings-bloom"
+                    class="lumen-slider"
+                    type="range"
+                    min="0"
+                    max="100"
+                    value="65"
+                    aria-label="Bloom Glow Intensity"
+                  />
+                </label>
+                <div class="settings-toggle-row">
+                  <button
+                    id="btn-settings-shake"
+                    class="toggle-pill"
+                    type="button"
+                    title="Toggle camera impact shake"
+                  >
+                    <span class="pill-indicator"></span>
+                    <span>SCREEN SHAKE: <strong id="label-settings-shake">ON</strong></span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="settings-group">
+                <div class="settings-group-title">MODE &amp; CONTROLS</div>
+                <div class="settings-toggle-row">
+                  <button
+                    id="btn-settings-mode"
+                    class="toggle-pill"
+                    type="button"
+                    title="Cycle Arcade, Daily Tide, and Zen Flow modes"
+                  >
+                    <span class="pill-indicator"></span>
+                    <span>MODE: <strong id="label-settings-mode">ARCADE</strong></span>
+                  </button>
+                  <button
+                    id="btn-settings-glide"
+                    class="toggle-pill"
+                    type="button"
+                    title="Toggle mouse hover steering"
+                  >
+                    <span class="pill-indicator"></span>
+                    <span>STEER: <strong id="label-settings-glide">HOLD</strong></span>
+                  </button>
+                  <button
+                    id="btn-settings-tips"
+                    class="toggle-pill"
+                    type="button"
+                    title="Show onboarding hints on your next run"
+                  >
+                    <span class="pill-indicator"></span>
+                    <span>TIPS: <strong id="label-settings-tips">AUTO</strong></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel-actions">
+              <button id="btn-settings-close" class="primary-btn compact" type="button">
+                <span class="btn-glow"></span>
+                <span class="btn-label">DONE</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- SANCTUARY PROGRESSION MODAL (TALENTS / TRAILS & PALETTES / SPIRITS) -->
+        <section id="screen-sanctuary" class="overlay-screen hidden" aria-hidden="true">
+          <div class="glass-panel sanctuary-panel">
+            <div class="sanctuary-head">
+              <div>
+                <div class="panel-eyebrow">ETERNAL PROGRESSION</div>
+                <h2 class="panel-title">The Sanctuary</h2>
+              </div>
+              <span id="sanctuary-lum-badge" class="settings-lum-badge">0 LUM</span>
+            </div>
+
+            <div class="sanctuary-tabs" role="tablist">
+              <button class="sanctuary-tab active" data-tab="upgrades" type="button">UPGRADES</button>
+              <button class="sanctuary-tab" data-tab="talents" type="button">TALENTS</button>
+              <button class="sanctuary-tab" data-tab="looks" type="button">TRAILS &amp; PALETTES</button>
+              <button class="sanctuary-tab" data-tab="spirits" type="button">SPIRITS</button>
+              <button class="sanctuary-tab" data-tab="archive" type="button">ARCHIVE</button>
+            </div>
+
+            <div class="sanctuary-body">
+              <div id="sanctuary-tab-upgrades" class="sanctuary-pane active">
+                <div id="sanctuary-upgrades-list" class="sanctuary-grid"></div>
+              </div>
+              <div id="sanctuary-tab-talents" class="sanctuary-pane hidden">
+                <div id="sanctuary-talents-tree" class="sanctuary-forks-list"></div>
+              </div>
+              <div id="sanctuary-tab-looks" class="sanctuary-pane hidden">
+                <div class="sanctuary-subhead">✦ SPIRIT TRAILS</div>
+                <div id="sanctuary-trails-list" class="sanctuary-grid sanctuary-grid-4"></div>
+                <div class="sanctuary-subhead">✦ LUMINOUS PALETTES</div>
+                <div id="sanctuary-palettes-list" class="sanctuary-grid sanctuary-grid-5"></div>
+              </div>
+              <div id="sanctuary-tab-spirits" class="sanctuary-pane hidden">
+                <div class="sanctuary-subhead">✦ SPIRIT ASPECTS</div>
+                <div id="sanctuary-spirits-list" class="sanctuary-grid sanctuary-grid-4"></div>
+              </div>
+              <div id="sanctuary-tab-archive" class="sanctuary-pane hidden">
+                <div id="sanctuary-archive-list" class="sanctuary-archive"></div>
+              </div>
+            </div>
+
+            <div class="panel-actions">
+              <button id="btn-sanctuary-close" class="primary-btn compact" type="button">
+                <span class="btn-glow"></span>
+                <span class="btn-label">DONE</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- PAUSE SCREEN -->
+        <section id="screen-pause" class="overlay-screen hidden" aria-hidden="true">
+          <div class="glass-panel pause-panel">
+            <div class="panel-eyebrow">STILLNESS</div>
+            <h2 class="panel-title">Sanctuary Paused</h2>
+
+            <div class="pause-stats">
+              <div class="stat-box">
+                <span class="stat-label">SCORE</span>
+                <span id="pause-score" class="stat-value">0</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">BEST</span>
+                <span id="pause-best" class="stat-value">0</span>
+              </div>
+            </div>
+
+            <div class="pause-loadout-wrap">
+              <div id="pause-loadout" class="loadout-strip loadout-strip--panel" aria-label="Equipped abilities"></div>
+              <div id="pause-tooltip" class="blessing-tooltip pause-tooltip hidden" role="tooltip"></div>
+            </div>
+            <div id="pause-synergies" class="pause-synergies hidden" aria-label="Active synergies"></div>
+
+            <div class="panel-stack-actions">
+              <button id="btn-resume" class="primary-btn compact" type="button">
+                <span class="btn-glow"></span>
+                <span class="btn-label">RESUME</span>
+              </button>
+              <button id="btn-pause-restart" class="ghost-btn" type="button">RESTART RUN (R)</button>
+              <button id="btn-pause-settings" class="ghost-btn" type="button">SETTINGS</button>
+              <button id="btn-pause-guide" class="ghost-btn" type="button">HOW TO PLAY</button>
+              <button
+                id="btn-pause-title"
+                class="ghost-btn muted"
+                type="button"
+                title="Finish the run and claim your score &amp; Luminance"
+              >
+                END RUN
+              </button>
+            </div>
+
+            <div class="audio-sliders-row pause-sliders">
+              <label class="slider-row slider-row-pill">
+                <span class="slider-row-head"><span>SFX</span><strong id="val-pause-sfx">85%</strong></span>
+                <input
+                  id="slider-pause-sfx"
+                  class="lumen-slider"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="85"
+                  aria-label="SFX Volume"
+                />
+              </label>
+              <label class="slider-row slider-row-pill">
+                <span class="slider-row-head"><span>MUSIC</span><strong id="val-pause-ambient">75%</strong></span>
+                <input
+                  id="slider-pause-ambient"
+                  class="lumen-slider"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="75"
+                  aria-label="Music Volume"
+                />
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <!-- LEVEL-UP ABILITY CARD DRAFT -->
+        <section id="screen-blessing" class="overlay-screen hidden" aria-hidden="true">
+          <div class="glass-panel blessing-panel">
+            <div id="blessing-eyebrow" class="panel-eyebrow">RESONANCE LEVEL UP</div>
+            <h2 class="panel-title">Choose an Ability Card</h2>
+            <div class="blessing-loadout-wrap">
+              <div
+                id="blessing-loadout"
+                class="loadout-strip loadout-strip--draft"
+                aria-label="Equipped abilities"
+              ></div>
+              <div id="blessing-tooltip" class="blessing-tooltip hidden" role="tooltip"></div>
+            </div>
+            <div id="blessing-cards" class="blessing-cards"></div>
+            <div class="blessing-footer">
+              <button id="btn-blessing-reroll" class="ghost-btn compact hidden" type="button">
+                REROLL (1)
+              </button>
+              <button id="btn-blessing-banish" class="ghost-btn compact banish-btn hidden" type="button">
+                BANISH (0)
+              </button>
+              <p class="panel-hint">PRESS 1, 2 OR 3 · HOVER ABILITIES FOR MODIFIERS</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- GAME OVER SCREEN -->
+        <section id="screen-gameover" class="overlay-screen hidden" aria-hidden="true">
+          <div class="title-card gameover-card">
+            <div class="title-hero gameover-hero">
+              <div id="gameover-record-badge" class="new-record-badge hidden">
+                ✦ NEW SANCTUARY RECORD ✦
+              </div>
+              <h2 class="game-title gameover-title">ECLIPSE DESCENDS</h2>
+              <div class="eyebrow gameover-eyebrow">
+                <span class="eyebrow-dot"></span>
+                THE SPARK RESTS
+                <span class="eyebrow-dot"></span>
+              </div>
+
+              <div class="gameover-score-hero">
+                <canvas
+                  id="go-constellation-canvas"
+                  class="go-constellation-canvas"
+                  width="360"
+                  height="120"
+                  aria-hidden="true"
+                ></canvas>
+                <span class="hero-score-label">FINAL SCORE</span>
+                <span id="go-score" class="hero-score-value">0</span>
+                <div class="go-phase-row">
+                  <span id="go-phase" class="hero-phase-reached">Reached Phase 01</span>
+                  <span id="go-medal-pill" class="go-medal-pill hidden"></span>
+                </div>
+                <div id="go-target-callout" class="go-target-callout hidden"></div>
+              </div>
+
+              <div class="title-records-row gameover-stats-row">
+                <div class="record-pill">
+                  <span class="record-label" id="go-best-label">HIGH SCORE</span>
+                  <span id="go-best" class="record-value">0</span>
+                </div>
+                <div class="record-pill record-pill-daily">
+                  <span class="record-label">LEVEL</span>
+                  <span id="go-level" class="record-value">LV 1</span>
+                </div>
+                <div class="record-pill record-pill-lum">
+                  <span class="record-label">PURGED</span>
+                  <span id="go-purged" class="record-value">0</span>
+                </div>
+                <div class="record-pill">
+                  <span class="record-label">ELITES</span>
+                  <span id="go-elites" class="record-value">0</span>
+                </div>
+                <div class="record-pill">
+                  <span class="record-label">SURVIVED</span>
+                  <span id="go-time" class="record-value">0:00</span>
+                </div>
+              </div>
+
+              <div id="go-loadout" class="loadout-strip loadout-strip--panel" aria-label="Run abilities"></div>
+
+              <div id="go-dmg-section" class="go-dmg-section hidden">
+                <div class="go-dmg-head">
+                  <span class="go-dmg-title">ABILITY DAMAGE SHARE</span>
+                  <button
+                    id="btn-go-dmg-details"
+                    class="go-dmg-toggle-btn"
+                    type="button"
+                    aria-expanded="false"
+                  >
+                    DETAILED INFO
+                  </button>
+                </div>
+                <div id="go-dmg-list" class="go-dmg-list"></div>
+                <div id="go-dmg-detail" class="go-dmg-detail hidden"></div>
+              </div>
+
+              <div class="title-actions">
+                <div class="title-actions-primary">
+                  <button id="btn-restart" class="primary-btn" type="button">
+                    <span class="btn-glow"></span>
+                    <span class="btn-label">REKINDLE (R)</span>
+                  </button>
+                </div>
+                <div class="title-actions-secondary">
+                  <button id="btn-share-run" class="title-link-btn share-btn" type="button">SHARE</button>
+                  <span class="title-actions-divider" aria-hidden="true"></span>
+                  <button id="btn-go-title" class="title-link-btn" type="button">TITLE</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="title-quests gameover-quests">
+              <div class="title-quests-header">
+                <span class="title-quests-line" aria-hidden="true"></span>
+                <span class="title-quests-heading">CHALLENGES</span>
+                <span class="title-quests-line" aria-hidden="true"></span>
+              </div>
+              <div id="go-quests-list" class="quests-row go-quests-list"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+  </body>
+</html>
