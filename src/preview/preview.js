@@ -648,11 +648,11 @@ function renderCardsTab() {
   titleEl.textContent =
     state.cardsSubMode === 'draft'
       ? 'Celestial Tarot Card Draft Preview'
-      : 'Old vs. New Spell Emblems (All 11)';
+      : 'UI Icons (24px) vs. Card Emblems (All 11)';
 
   controlsEl.innerHTML = `
     <button class="ctrl-btn ${state.cardsSubMode === 'draft' ? 'active' : ''}" id="btn-pv-draft">3-Card Draft</button>
-    <button class="ctrl-btn ${state.cardsSubMode === 'compare' ? 'active' : ''}" id="btn-pv-compare">Old vs. New Emblems (11)</button>
+    <button class="ctrl-btn ${state.cardsSubMode === 'compare' ? 'active' : ''}" id="btn-pv-compare">UI Icons vs. Card Emblems (11)</button>
   `;
   controlsEl.querySelector('#btn-pv-draft')?.addEventListener('click', () => {
     state.cardsSubMode = 'draft';
@@ -691,11 +691,11 @@ function renderCardsTab() {
         <div class="pv-compare-pair">
           <div class="pv-compare-slot">
             <div class="pv-medallion">${TAROT_ASTROLABE_SVG}<span class="pv-old-svg">${ABILITY_ICONS[b.id] || ''}</span></div>
-            <small>Old Icon</small>
+            <small>UI / Talent Icon</small>
           </div>
           <div class="pv-compare-slot is-new">
             <div class="pv-medallion">${TAROT_ASTROLABE_SVG}${ABILITY_CARD_EMBLEMS[b.id] || ''}</div>
-            <small style="color:var(--gold)">New Emblem</small>
+            <small style="color:var(--gold)">Card Emblem</small>
           </div>
         </div>
       </div>`
